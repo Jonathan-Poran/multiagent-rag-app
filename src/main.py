@@ -1,4 +1,5 @@
 
+import os
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -6,7 +7,7 @@ from typing import  TypedDict, Annotated
 from langchain_core.messages import BaseMessage, HumanMessage
 from langgraph.graph import StateGraph, END, add_messages
 
-from chanins import generation_chain, reflection_chain
+from chains import generation_chain, reflection_chain
 
 class MessageGraph(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
@@ -14,6 +15,16 @@ class MessageGraph(TypedDict):
 
 REFLECT="reflect"
 GENERATE="generate"
+from pymongo import MongoClient, errors
+
+try:
+    client = MongoClient(os.getenv("MONGODB_URI"))
+    db = client[os.getenv("MONGODB_DB_NAME")]
+    collection = db["inputs"]
+    print("Successfully connected to MongoDB")
+except errors.ConnectionError as e:
+    print("Failed to connect to MongoDB:", e)
+    collection = None  # prevent further insertions
 
 
 def generation_node(state: MessageGraph):
@@ -55,6 +66,13 @@ if __name__ == "__main__":
     print("Please enter the ingredients you have in the fridge:")
     # eggs, tomatoes, garlic and basil
     input_message = HumanMessage(content="I have some "+input()+ " in the fridge.")
+    if collection is not None:
+        try:
+            collection.insert_one({"input": input_message.content})
+        except errors.PyMongoError as e:
+            print("Failed to insert document into MongoDB:", e)
+    else:
+        print("Skipping MongoDB insertion due to connection issues.")
     print()
 
     response = graph.invoke({"messages": [input_message]})

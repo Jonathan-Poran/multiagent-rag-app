@@ -1,5 +1,13 @@
 python-dotenv
+pytest
+pymongo[srv]
+grandalf
+
 langgraph
 langchain
+langchain-community
 langchain-openai
-grandalf
+langchainhub
+
+beautifulsoup4
+tavily-python
