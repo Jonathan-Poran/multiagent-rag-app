@@ -1,5 +1,8 @@
+fastapi
 python-dotenv
 pytest
+uvicorn
+pandantic
 pymongo[srv]
 grandalf
 
