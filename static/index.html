@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Chef Agent</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+        .chat-box { border: 1px solid #ccc; padding: 1rem; height: 300px; overflow-y: scroll; border-radius: 8px; margin-bottom: 1rem; background: #f9f9f9; }
+        .message { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .user { background: #e3f2fd; text-align: right; }
+        .ai { background: #fff; border: 1px solid #eee; }
+        .input-area { display: flex; gap: 10px; }
+        input { flex: 1; padding: 10px; font-size: 16px; }
+        button { padding: 10px 20px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+        button:disabled { background: #ccc; }
+    </style>
+</head>
+<body>
+    <h1>👨‍🍳 AI Recipe Agent</h1>
+    
+    <div class="chat-box" id="chat-box">
+        <div class="message ai">Hello! What ingredients do you have?</div>
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="user-input" placeholder="e.g. eggs, tomato, garlic" onkeypress="handleEnter(event)">
+        <button onclick="sendMessage()" id="send-btn">Send</button>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const inputField = document.getElementById('user-input');
+            const chatBox = document.getElementById('chat-box');
+            const sendBtn = document.getElementById('send-btn');
+            
+            const text = inputField.value.trim();
+            if (!text) return;
+
+            // 1. Show User Message
+            chatBox.innerHTML += `<div class="message user">${text}</div>`;
+            inputField.value = '';
+            sendBtn.disabled = true;
+
+            try {
+                // 2. Send to Server (The Endpoint)
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+
+                const data = await response.json();
+
+                // 3. Show AI Reply
+                chatBox.innerHTML += `<div class="message ai">${data.reply}</div>`;
+                
+            } catch (error) {
+                chatBox.innerHTML += `<div class="message ai" style="color:red">Error connecting to server.</div>`;
+            }
+
+            // Scroll to bottom and re-enable button
+            chatBox.scrollTop = chatBox.scrollHeight;
+            sendBtn.disabled = false;
+        }
+
+        function handleEnter(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+    </script>
+</body>
+</html>
