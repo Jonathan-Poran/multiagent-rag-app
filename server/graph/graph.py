@@ -25,3 +25,8 @@ def build_graph():
 # Create the graph instance
 graph = build_graph()
 
+
+def print_graph():
+    """Print the graph visualization in mermaid format."""
+    print(graph.get_graph().draw_mermaid())
+

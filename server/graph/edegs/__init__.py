@@ -10,6 +10,7 @@ from ..consts import REFLECT
 
 def should_continue(state: MessageGraph) -> str:
     print(state["messages"][-1].content)
+    return END
     print("\nAre you happy with the recipe? (y/n)")
     return END if input() == "y" else REFLECT
 
