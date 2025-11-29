@@ -11,4 +11,4 @@ class FoodRequest(BaseModel):
 
 @router.post("")
 async def user_input_food(req: FoodRequest):
-    return await process_user_input_food("eggs, tomatoes, onions, garlic")
+    return await process_user_input_food(req.text)
