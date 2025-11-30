@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from server.config.logger import get_logger
 
 router = APIRouter()
-logger = get_logger("api.welcome_message")
+logger = get_logger("FastAPI_Server")
 
 @router.get("")
 async def welcome_message():

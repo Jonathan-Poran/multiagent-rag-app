@@ -3,7 +3,7 @@ from . import get_graph_png, user_input, welcome_message, user_input_food
 from server.config.logger import get_logger
 
 router = APIRouter()
-logger = get_logger("api.routes")
+logger = get_logger("FastAPI_Server")
 
 
 def register_routes(app: FastAPI):

@@ -6,14 +6,14 @@ from server.services.multiagent import process_user_input_food
 from server.config.logger import get_logger
 
 router = APIRouter()
-logger = get_logger("api.user_input_food")
+logger = get_logger("FastAPI_Server")
 
 class FoodRequest(BaseModel):
     text: str
 
 @router.post("")
 async def user_input_food(req: FoodRequest):
-    logger.info(f"Received user input food request: {req.text[:50]}...")
+    logger.info(f"Received user input food request")
     try:
         result = await process_user_input_food(req.text)
         logger.info("User input food request processed successfully")

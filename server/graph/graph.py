@@ -6,7 +6,7 @@ from .consts import REFLECT, GENERATE
 from .nodes import generation_node, reflection_node
 from .edegs import should_continue
 
-logger = get_logger("graph")
+logger = get_logger("Graph")
 
 
 def build_graph():

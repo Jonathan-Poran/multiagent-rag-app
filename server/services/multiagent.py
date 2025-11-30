@@ -1,10 +1,10 @@
 from langchain_core.messages import HumanMessage
 from fastapi import HTTPException
-from server.services.mongo import get_collection
+from server.services.mongo import save_user_input
 from server.graph.graph import graph
 from server.config.logger import get_logger
 
-logger = get_logger("multiagent")
+logger = get_logger("Multiagent")
 
 
 def run_graph(text: str):
@@ -17,18 +17,13 @@ def run_graph(text: str):
 
 
 async def process_user_input_food(request: str):
-    logger.info(f"Processing user input food request: {request[:50]}...")
-    collection = get_collection()
+    logger.info(f"Processing request with ingredients:\n {request}\n")
 
     user_text = f"I have some {request} in the fridge."
 
     # Save to DB
     try:
-        if collection is not None:
-            collection.insert_one({"input": user_text})
-            logger.info("User input saved to MongoDB")
-        else:
-            logger.warning("MongoDB collection not available, skipping save")
+        save_user_input(user_text)
     except Exception as e:
         logger.error(f"MongoDB insertion failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"MongoDB insertion failed: {e}")
