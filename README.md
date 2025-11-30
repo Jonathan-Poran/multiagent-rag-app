@@ -84,3 +84,13 @@ LANGCHAIN_API_KEY=<your_langchain_api_key>
 LANGCHAIN_TRACING_V2=true
 LANGCHAIN_PROJECT=multiagent-rag-app
 ```
+
+## Running with Docker
+
+To run the application using Docker Compose:
+
+```bash
+docker compose --env-file .env up
+```
+
+This will start both the application and MongoDB services. Make sure you have a `.env` file with all required environment variables before running this command.

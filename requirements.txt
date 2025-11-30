@@ -1,6 +1,7 @@
 fastapi
 python-dotenv
 pytest
+dnspython
 uvicorn
 pydantic
 pydantic-settings
