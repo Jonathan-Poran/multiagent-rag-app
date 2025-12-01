@@ -1,5 +1,5 @@
 # multiagent-rag-app
-A multi-agent system that collaborates to retrieve, process, and synthesize information into structured insights using LangGraph and Tavily (RAG-based)
+A RAG-based multi-agent creative assistant that leverages Tavily and OpenAI to retrieve, process, and generate creative content through collaborative agent interactions.
 
 
 ## Environment Setup
@@ -80,6 +80,7 @@ Create a `.env` file in the root directory with the following variables (you sho
 
 ```env
 OPENAI_API_KEY=<your_openai_api_key>
+TAVILY_API_KEY=<your_tavily_api_key>
 LANGCHAIN_API_KEY=<your_langchain_api_key>
 LANGCHAIN_TRACING_V2=true
 LANGCHAIN_PROJECT=multiagent-rag-app
@@ -94,3 +95,7 @@ docker compose --env-file .env up
 ```
 
 This will start both the application and MongoDB services. Make sure you have a `.env` file with all required environment variables before running this command.
+
+## Visualizing the Agent Graph
+
+You can visualize the agent workflow graph using [Mermaid Live Editor](https://mermaid.live/edit#pako:eNp1Ul1vgkAQ_CuX7YsmQAH58jS-1J_Qp5bGnLAHJHCQ42hrjf-9B0W0UQk5dm9ndiYTjpDUKQIF0zRjkdSCFxmNBSG8rL-SnEk1dIQknfxESspCIJOxGOCZZE1OXrerP0j_7Hat0qTdbva-bjZTt35uNh9zSikvZKsu8AwFSqZwdi7ml5lEXmKiZuN3fi2CIp0khnoSKNn1_skAMc3NpLa6NUBMSwPGZQ_no5XVjclH9H_jW3ai3bZb5CRFzrpSEV6UJX3iLrc5N_qszRyLLFfUsdw7tCHNgWTWDUsKdaD2HVifybh6z_cBT8CATBYpUCU7NKBCWbG-hWPPjkHlWGEMVJejsxhicdK0hom3uq7OTFl3WQ6Us7LVXdekOqptwfSPcYHoTFC-1J1QQF1_WAH0CN9AvTCwHN_19RuEkbMw4KAhgb70AjdceEvbDyP_ZMDPIGlbXhQtloE-bMeOAs8NTr8Go9Xc). The graph shows the flow between the generation and reflection agents in the multi-agent system.

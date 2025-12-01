@@ -1,6 +1,6 @@
 
 services:
-  app:
+   my-rag-app:
     build: .
     env_file: .env
     ports:
