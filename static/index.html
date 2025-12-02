@@ -99,6 +99,10 @@
             cursor: not-allowed;
         }
 
+        #graph-btn:hover {
+            background-color: #218838 !important;
+        }
+
         .loading {
             color: #666;
             font-style: italic;
@@ -110,7 +114,12 @@
 </head>
 <body>
     <div class="container">
-        <h1> Social Influencer Assistant Agent</h1>        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h1 style="margin: 0;">Social Influencer Assistant Agent</h1>
+            <button onclick="openGraphDiagram()" id="graph-btn" style="background-color: #28a745; padding: 10px; font-size: 14px; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                graph
+            </button>
+        </div>
         <div id="chat-area"></div>
         
         <div class="loading" id="loading-msg">Thinking...</div>
@@ -153,6 +162,44 @@
         function handleKeyPress(event) {
             if (event.key === 'Enter') {
                 sendMessage();
+            }
+        }
+
+        async function openGraphDiagram() {
+            try {
+                const graphBtn = document.getElementById('graph-btn');
+                graphBtn.disabled = true;
+                graphBtn.textContent = 'Loading...';
+                
+                const response = await fetch('/get-graph-png');
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                
+                // Get the blob from response
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                
+                // Open in new window
+                const newWindow = window.open(url, '_blank');
+                if (!newWindow) {
+                    // If popup blocked, create download link
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'diagram.png';
+                    a.click();
+                }
+                
+                // Clean up the URL after a delay
+                setTimeout(() => window.URL.revokeObjectURL(url), 100);
+                
+            } catch (error) {
+                console.error("Error loading graph diagram:", error);
+                alert("Error loading graph diagram: " + error.message);
+            } finally {
+                const graphBtn = document.getElementById('graph-btn');
+                graphBtn.disabled = false;
+                graphBtn.textContent = 'graph';
             }
         }
 
