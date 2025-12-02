@@ -41,7 +41,7 @@ def mermaid_to_png_sync(mermaid_text: str, output_path: str) -> bool:
         input_path = tmp_input.name
     
     try:
-        logger.info(f"Generating PNG from Mermaid diagram (input: {input_path}, output: {output_path})")
+        logger.info(f"Generating PNG from Mermaid diagram \n input: {input_path} \n output: {output_path}")
         
         # Run mermaid-cli with timeout
         result = subprocess.run(
@@ -57,7 +57,7 @@ def mermaid_to_png_sync(mermaid_text: str, output_path: str) -> bool:
             logger.error(error_msg)
             return False
         
-        logger.info(f"Successfully generated PNG from Mermaid diagram at {output_path}")
+        logger.info(f"Successfully generated graph PNG")
         return True
     except subprocess.CalledProcessError as e:
         error_msg = f"mmdc failed: stdout={e.stdout}, stderr={e.stderr}"
