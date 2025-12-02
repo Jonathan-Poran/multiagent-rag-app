@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 from dotenv import load_dotenv
 from pymongo import MongoClient, errors
+from fastapi import HTTPException
 from server.config.logger import get_logger
 from server.config.settings import settings
 
@@ -29,18 +30,15 @@ def get_collection():
         return None
 
 
-def save_user_input(user_text: str) -> bool:
+def save_user_input(user_text: str) -> None:
     """
-    Save user input to MongoDB with timestamp.
+    Save user input to MongoDB with timestamp and error handling.
     
     Args:
         user_text (str): The user input text to save.
     
-    Returns:
-        bool: True if saved successfully, False if collection not available.
-    
     Raises:
-        Exception: If insertion fails.
+        HTTPException: If MongoDB insertion fails.
     """
     collection = get_collection()
     
@@ -53,10 +51,9 @@ def save_user_input(user_text: str) -> bool:
             }
             collection.insert_one(document)
             logger.info(f"User input saved to MongoDB at {document['created_at']}")
-            return True
         else:
             logger.warning("MongoDB collection not available, skipping save")
-            return False
+            # Don't raise error if collection is not available, just log warning
     except Exception as e:
         logger.error(f"MongoDB insertion failed: {e}", exc_info=True)
-        raise
+        raise HTTPException(status_code=500, detail=f"MongoDB insertion failed: {e}")
