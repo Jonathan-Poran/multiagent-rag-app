@@ -27,8 +27,14 @@ def build_graph():
     return graph
 
 
-# Create the graph instance
-graph = build_graph()
+# Create the graph instance with error handling
+graph = None
+try:
+    graph = build_graph()
+except Exception as e:
+    logger.error(f"Failed to build graph: {e}", exc_info=True)
+    # Graph will be None, but app can still start
+    # Individual requests will need to handle this
 
 
 def print_graph():

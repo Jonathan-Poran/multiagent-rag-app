@@ -55,7 +55,7 @@ docker build -t multiagent-rag-app .
 ### Run the container:
 
 ```bash
-docker run -p 8000:8000 \
+docker run -p 8080:8080 \
   -e OPENAI_API_KEY=your_key \
   -e MONGODB_URI=your_mongodb_uri \
   -e MONGODB_DB_NAME=multiagent_rag \
@@ -65,14 +65,14 @@ docker run -p 8000:8000 \
 ### Run with .env file:
 
 ```bash
-docker run -p 8000:8000 --env-file .env multiagent-rag-app
+docker run -p 8080:8080 --env-file .env multiagent-rag-app
 ```
 
 ## Access the Application
 
-- Web UI: http://localhost:8000
-- API Docs: http://localhost:8000/docs
-- Health Check: http://localhost:8000/health
+- Web UI: http://localhost:8080
+- API Docs: http://localhost:8080/docs
+- Health Check: http://localhost:8080/health
 
 ## MongoDB
 

@@ -3,6 +3,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from pymongo import MongoClient, errors
 from server.config.logger import get_logger
+from server.config.settings import settings
 
 load_dotenv()
 
@@ -18,8 +19,8 @@ def get_collection():
         return _collection
 
     try:
-        _client = MongoClient(os.getenv("MONGODB_URI"))
-        db = _client[os.getenv("MONGODB_DB_NAME")]
+        _client = MongoClient(settings.mongodb_uri)
+        db = _client[settings.mongodb_db_name]
         _collection = db["inputs"]
         logger.info("Connected to MongoDB successfully")
         return _collection

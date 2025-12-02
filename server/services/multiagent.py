@@ -8,6 +8,11 @@ logger = get_logger("Multiagent")
 
 
 def run_graph(text: str):
+    if graph is None:
+        raise HTTPException(
+            status_code=503, 
+            detail="Graph is not initialized. Please check server logs and configuration."
+        )
     logger.info("Running graph with user input")
     logger.debug(f"Input text: {text[:100]}...")  # Log first 100 chars
     input_message = HumanMessage(content=text)

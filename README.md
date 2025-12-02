@@ -84,7 +84,35 @@ TAVILY_API_KEY=<your_tavily_api_key>
 LANGCHAIN_API_KEY=<your_langchain_api_key>
 LANGCHAIN_TRACING_V2=true
 LANGCHAIN_PROJECT=multiagent-rag-app
+MONGODB_URI=mongodb://localhost:27017
+MONGODB_DB_NAME=multiagent_rag
+PORT=8080
 ```
+
+**Note:** `PORT` is optional and defaults to 8080 if not set. This is useful for deployment platforms like Heroku, AWS Elastic Beanstalk, etc.
+
+### Running Locally
+
+Make sure you have:
+1. Activated your virtual environment
+2. Installed dependencies: `pip install -r requirements.txt`
+3. Created a `.env` file with the required environment variables
+4. MongoDB running (if using local MongoDB)
+
+Then run the application:
+
+```bash
+# Using default port 8080
+uvicorn server.server:app --host 0.0.0.0 --port 8080 --reload
+
+# Or use PORT from environment variable
+PORT=8080 uvicorn server.server:app --host 0.0.0.0 --port $PORT --reload
+```
+
+**Access the application:**
+- Web UI: http://localhost:8080 (or the port you specified)
+- API Docs: http://localhost:8080/docs
+- Health Check: http://localhost:8080/health
 
 ## Running with Docker
 

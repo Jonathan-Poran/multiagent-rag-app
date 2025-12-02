@@ -1,5 +1,6 @@
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI
+from server.config.settings import settings
 
 generation_prompt = ChatPromptTemplate.from_messages(
     [
@@ -25,7 +26,7 @@ reflection_prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
-llm = ChatOpenAI()
+llm = ChatOpenAI(api_key=settings.openai_api_key)
 
 generation_chain = generation_prompt | llm
 reflection_chain = reflection_prompt | llm
