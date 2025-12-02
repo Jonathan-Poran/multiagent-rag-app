@@ -10,6 +10,7 @@ from server.api import register_routes
 from server.graph.graph import graph
 from server.config.logger import logger, set_logger_level
 from server.config.settings import settings
+from server.api.get_graph_png import generate_graph_png_at_startup
 
 def setup_server() -> FastAPI:
     # Initialize logger with settings
@@ -36,15 +37,12 @@ def setup_server() -> FastAPI:
     else:
         logger.info("MONGODB_DB_NAME is configured")
     
-    # Only print graph in development (not in production)
-    # Wrap in try-except to prevent startup failures
+    # Generate graph PNG at startup
     try:
-        import sys
-        if sys.stdout.isatty():  # Only if running in a terminal
-            from server.graph.graph import print_graph
-            print_graph()  # Keep print for graph visualization
+        logger.info("Generating graph PNG at startup")
+        generate_graph_png_at_startup()
     except Exception as e:
-        logger.warning(f"Could not print graph visualization: {e}")
+        logger.warning(f"Could not generate graph PNG at startup: {e}. It will be generated on-demand.")
 
     app = FastAPI(title="Multi-Agent RAG App", version="1.0.0")
 
@@ -66,4 +64,5 @@ def setup_server() -> FastAPI:
         return FileResponse(os.path.join(static_path, "index.html"))
 
     register_routes(app)
+    
     return app
