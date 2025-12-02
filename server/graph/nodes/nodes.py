@@ -3,23 +3,35 @@ Node functions for LangGraph workflow.
 Contains generation and reflection node implementations.
 """
 
-from langchain_core.messages import HumanMessage
+import json
+from langchain_core.messages import HumanMessage, AIMessage
 from ..chains import generation_chain, reflection_chain
 from ..state import MessageGraph
 
 
 def generation_node(state: MessageGraph):
     """
-    Generation node that creates a recipe based on available ingredients.
+    Generation node that extracts topic and details from user's social media content request.
     
     Args:
         state: The current graph state containing messages.
     
     Returns:
-        dict: Updated state with the generated recipe message.
+        dict: Updated state with the structured JSON containing topic and details.
     """
     result = generation_chain.invoke({"messages": state["messages"]})
-    return {"messages": [result]}
+    
+    # Convert the structured output to JSON string
+    content_structure = {
+        "topic": result.topic,
+        "details": result.details
+    }
+    json_response = json.dumps(content_structure, ensure_ascii=False, indent=2)
+    
+    # Create an AIMessage with the JSON structure
+    ai_message = AIMessage(content=json_response)
+    
+    return {"messages": [ai_message]}
 
 
 def reflection_node(state: MessageGraph):

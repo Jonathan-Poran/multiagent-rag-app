@@ -1,43 +1,76 @@
-from langchain_core.messages import HumanMessage
 from fastapi import HTTPException
 from server.services.mongo import save_user_input
+from server.services.conversation import add_user_message, update_conversation_state
 from server.graph.graph import graph
 from server.config.logger import get_logger
 
 logger = get_logger("Multiagent")
 
 
-def run_graph(text: str):
+def run_graph_with_state(conversation_state):
+    """
+    Run the graph with existing conversation state.
+    
+    Args:
+        conversation_state: The current conversation state with messages.
+    
+    Returns:
+        tuple: (AI response text, updated state)
+    """
     if graph is None:
         raise HTTPException(
             status_code=503, 
             detail="Graph is not initialized. Please check server logs and configuration."
         )
-    logger.info("Running graph with user input")
-    logger.debug(f"Input text: {text[:100]}...")  # Log first 100 chars
-    input_message = HumanMessage(content=text)
-    result = graph.invoke({"messages": [input_message]}).get("messages")[-1].content
-    logger.info("Graph execution completed successfully")
-    return result
+    
+    logger.info(f"Running graph with {len(conversation_state['messages'])} messages in state")
+    
+    # Invoke graph with the conversation state
+    updated_state = graph.invoke(conversation_state)
+    
+    # Get the last message (AI response)
+    if updated_state["messages"]:
+        last_message = updated_state["messages"][-1]
+        # Extract content from the message
+        if hasattr(last_message, 'content'):
+            ai_response = last_message.content
+        else:
+            ai_response = str(last_message)
+        logger.info("Graph execution completed successfully")
+        return ai_response, updated_state
+    else:
+        raise HTTPException(status_code=500, detail="Graph returned no messages")
 
 
-async def process_user_input_food(request: str):
-    logger.info(f"Processing request with ingredients:\n {request}\n")
-
-    user_text = f"I have some {request} in the fridge."
+async def process_user_input(request: str):
+    """
+    Process user input in a chat conversation.
+    
+    Args:
+        request: The user's message text.
+    
+    Returns:
+        dict: Response with AI message text.
+    """
+    logger.info(f"Processing user input:\n {request}\n")
 
     # Save to DB
-    try:
-        save_user_input(user_text)
-    except Exception as e:
-        logger.error(f"MongoDB insertion failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"MongoDB insertion failed: {e}")
+    save_user_input(request)
 
-    # Run the graph
+    # Add user message to conversation state
+    conversation_state = add_user_message(request)
+
+    # Run the graph with conversation state
     try:
-        result = run_graph(user_text)
+        ai_response, updated_state = run_graph_with_state(conversation_state)
+        
+        # Update conversation state with graph output
+        update_conversation_state(updated_state)
+        
         logger.info("Successfully processed user input")
-        return {"response": result}
+        return {"response": ai_response}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Graph error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Graph error: {e}")

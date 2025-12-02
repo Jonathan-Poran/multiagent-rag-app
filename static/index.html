@@ -125,7 +125,7 @@
         <div class="loading" id="loading-msg">Thinking...</div>
         
         <div class="input-group">
-            <input type="text" id="user-input" placeholder="Enter ingredients you have..." onkeypress="handleKeyPress(event)">
+            <input type="text" id="user-input" placeholder="What content do you want to create for social media?" onkeypress="handleKeyPress(event)">
             <button onclick="sendMessage()" id="submit-btn">Send</button>
         </div>
     </div>
@@ -224,8 +224,8 @@
             loadingMsg.style.display = 'block';
 
             try {
-                // Send to user-input-food endpoint
-                const response = await fetch('/user-input-food', {
+                // Send to user-input endpoint
+                const response = await fetch('/user-input', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

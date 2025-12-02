@@ -2,7 +2,7 @@ from langgraph.graph import StateGraph, END
 from server.config.logger import get_logger
 
 from .state import MessageGraph
-from .consts import REFLECT, GENERATE
+from .nodes.consts import REFLECT, GENERATE
 from .nodes import generation_node, reflection_node
 from .edegs import should_continue
 
