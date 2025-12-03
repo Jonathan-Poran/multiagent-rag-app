@@ -10,16 +10,6 @@ logger = get_logger("GetGraphPNG")
 # Store the path to the pre-generated PNG file
 _graph_png_path: str | None = None
 
-
-def initialize_graph_png():
-    """
-    Initialize the graph PNG at server startup.
-    This should be called during server initialization.
-    """
-    global _graph_png_path
-    _graph_png_path = generate_graph_png_at_startup()
-
-
 @router.get("")
 async def get_graph_png():
     """
