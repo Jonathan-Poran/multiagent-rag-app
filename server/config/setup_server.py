@@ -10,7 +10,7 @@ from server.api import register_routes
 from server.graph.graph import graph
 from server.config.logger import logger, set_logger_level
 from server.config.settings import settings
-from server.api.get_graph_png import generate_graph_png_at_startup
+from server.services.print_graph import generate_graph_png_at_startup
 
 def setup_server() -> FastAPI:
     # Initialize logger with settings
