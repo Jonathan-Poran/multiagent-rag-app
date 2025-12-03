@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 from dotenv import load_dotenv
 from pymongo import MongoClient, errors
+from bson import ObjectId
 from fastapi import HTTPException
 from server.config.logger import get_logger
 from server.config.settings import settings
@@ -28,6 +29,18 @@ def get_collection():
     except Exception as e:
         logger.error(f"MongoDB connection failed: {e}", exc_info=True)
         return None
+
+
+def generate_conversation_id() -> str:
+    """
+    Generate a new unique conversation ID.
+    
+    Returns:
+        str: A new unique conversation ID.
+    """
+    conversation_id = str(ObjectId())
+    logger.info(f"Generated new conversation ID: {conversation_id}")
+    return conversation_id
 
 
 def save_user_input(user_text: str) -> None:

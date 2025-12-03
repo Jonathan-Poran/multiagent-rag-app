@@ -131,6 +131,9 @@
     </div>
 
     <script>
+        // Store conversation_id
+        let conversationId = null;
+
         // Load welcome message when page loads
         window.addEventListener('DOMContentLoaded', async () => {
             await loadWelcomeMessage();
@@ -142,11 +145,12 @@
                 if (!response.ok) {
                     throw new Error(`Server error: ${response.status}`);
                 }
-                const message = await response.text();
-                addMessage(message, 'assistant');
+                const data = await response.json();
+                conversationId = data.conversation_id;
+                addMessage(data.message, 'assistant');
             } catch (error) {
                 console.error("Error loading welcome message:", error);
-                addMessage("Welcome to the Recipe Assistant! What ingredients do you have?", 'assistant');
+                addMessage("Welcome to the Social Influencer Assistant! What content do you want to create?", 'assistant');
             }
         }
 
@@ -224,13 +228,20 @@
             loadingMsg.style.display = 'block';
 
             try {
-                // Send to user-input endpoint
+                if (!conversationId) {
+                    throw new Error("No conversation ID. Please refresh the page.");
+                }
+
+                // Send to user-input endpoint with conversation_id
                 const response = await fetch('/user-input', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ text: text })
+                    body: JSON.stringify({ 
+                        text: text,
+                        conversation_id: conversationId
+                    })
                 });
 
                 if (!response.ok) {
