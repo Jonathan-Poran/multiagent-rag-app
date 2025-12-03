@@ -114,7 +114,7 @@ def test_topic_extraction_node_input_without_details():
 # ---------------------------------------------------------------------------
 def test_topic_extraction_node_nonsensical_text():
     """
-    Test 3: Nonsensical input → empty topic.
+    Test 3: Nonsensical input → empty topic → friendly message asking for clarification.
     """
     text = "asdfghjkl qwertyuiop zxcvbnm 123456789 !@#$%^&*()"
 
@@ -132,5 +132,53 @@ def test_topic_extraction_node_nonsensical_text():
 
         result = topic_extraction_node(state)
 
+        # Verify empty topic and details
         assert result["topic"] == ""
-        assert isinstance(result["details"], str)
+        assert result["details"] == ""
+        
+        # Verify friendly message was returned
+        assert len(result["messages"]) == 1
+        assert isinstance(result["messages"][0], AIMessage)
+        message_content = result["messages"][0].content.lower()
+        
+        # Check that the message asks for clarification
+        # The actual message contains "could you please specify what kind of content you want to create?"
+        assert "specify what kind of content" in message_content
+
+# ---------------------------------------------------------------------------
+# TEST 4 - Additional test for empty topic behavior
+# ---------------------------------------------------------------------------
+def test_topic_extraction_node_empty_topic_returns_friendly_message():
+    """
+    Test 4: When topic extraction returns empty string, node should return friendly message.
+    """
+    input_text = "Hello, how are you?"
+
+    state = {
+        "messages": [HumanMessage(content=input_text)],
+        "topic": None,
+        "details": None,
+    }
+
+    with patch("server.graph.nodes.topic_extraction_node.topic_extraction_chain") as mock_chain:
+        mock_result = Mock()
+        mock_result.topic = ""  # Empty topic
+        mock_result.details = ""
+        mock_chain.invoke.return_value = mock_result
+
+        result = topic_extraction_node(state)
+
+        # Verify empty topic
+        assert result["topic"] == ""
+        assert result["details"] == ""
+        
+        # Verify friendly message
+        assert len(result["messages"]) == 1
+        message = result["messages"][0]
+        assert isinstance(message, AIMessage)
+        
+        # Check message contains helpful content
+        content = message.content
+        assert len(content) > 50  # Should be a substantial message
+        assert "topic" in content.lower() or "content" in content.lower()
+        assert "example" in content.lower() or "could" in content.lower() or "would" in content.lower()
