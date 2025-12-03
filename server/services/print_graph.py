@@ -11,6 +11,9 @@ from server.config.logger import get_logger
 
 logger = get_logger("PrintGraph")
 
+# Store the path to the pre-generated PNG file (set at startup)
+_graph_png_path: str | None = None
+
 
 def mermaid_to_png_sync(mermaid_text: str, output_path: str) -> bool:
     """
@@ -82,6 +85,7 @@ def generate_graph_png_at_startup(output_path: str = None) -> str:
     """
     Generate the graph PNG at server startup.
     This should be called during server initialization.
+    Stores the path globally so the API can access it.
     
     Args:
         output_path: Optional custom path for the PNG. If None, uses temp directory.
@@ -89,6 +93,8 @@ def generate_graph_png_at_startup(output_path: str = None) -> str:
     Returns:
         str: Path to the generated PNG file, or None if generation failed.
     """
+    global _graph_png_path
+    
     # Lazy import to avoid circular dependencies
     from server.graph.graph import graph
     
@@ -111,14 +117,26 @@ def generate_graph_png_at_startup(output_path: str = None) -> str:
         
         # Generate PNG
         if mermaid_to_png_sync(mermaid_diagram, output_path):
-            logger.info(f"Graph PNG generated successfully at startup: {output_path}")
-            return output_path
+            _graph_png_path = output_path
+            logger.info(f"Graph PNG generated successfully at startup: {_graph_png_path}")
+            return _graph_png_path
         else:
             logger.error("Failed to generate graph PNG at startup")
             return None
     except Exception as e:
         logger.error(f"Error generating graph PNG at startup: {e}", exc_info=True)
         return None
+
+
+def get_graph_png_path() -> str | None:
+    """
+    Get the path to the pre-generated graph PNG file.
+    Returns None if the PNG was not generated at startup.
+    
+    Returns:
+        str | None: Path to the PNG file, or None if not generated.
+    """
+    return _graph_png_path
 
 
 def generate_graph_png_on_demand(output_path: str = None) -> str:

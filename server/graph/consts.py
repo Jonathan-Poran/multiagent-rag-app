@@ -3,6 +3,7 @@ Constants for graph node names.
 """
 
 # Main workflow nodes
+REFLECT = "reflect"
 TOPIC_EXTRACTION = "topic_extraction"
 YOUTUBE_SEARCH = "youtube_search"
 TBD_SEARCH = "tbd_search"
