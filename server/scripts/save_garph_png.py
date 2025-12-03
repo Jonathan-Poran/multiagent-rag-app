@@ -1,8 +1,11 @@
 """
 Script to generate and save the graph PNG to desktop.
+
+to run this script, run:
+python server/scripts/save_garph_png.py
+
 """
 
-import os
 import sys
 from pathlib import Path
 
@@ -14,17 +17,17 @@ if str(project_root) not in sys.path:
 # Hardcoded desktop path (macOS)
 desktop_path = Path.home() / "Desktop" / "graph_diagram.png"
 
-
 def save_graph_to_desktop():
     """Generate graph PNG and save it to desktop."""
     try:
-        # Use the service to generate the PNG
+        # Use the service function which handles lazy imports internally
+        # This avoids circular import issues
         from server.services.print_graph import generate_graph_png_on_demand
-        
+
         print(f"Generating graph PNG...")
         print(f"Output path: {desktop_path}")
-        
-        # Generate PNG using the service
+
+        # Generate PNG using the service (it handles graph import internally)
         result_path = generate_graph_png_on_demand(str(desktop_path))
         
         if result_path:
@@ -33,7 +36,13 @@ def save_graph_to_desktop():
         else:
             print("✗ Failed to generate PNG")
             return False
-            
+
+    except ValueError as e:
+        print(f"Error: {e}")
+        return False
+    except RuntimeError as e:
+        print(f"Error: {e}")
+        return False
     except Exception as e:
         print(f"Error: {e}")
         import traceback
@@ -42,5 +51,4 @@ def save_graph_to_desktop():
 
 
 if __name__ == "__main__":
-    success = save_graph_to_desktop()
-    sys.exit(0 if success else 1)
+    save_graph_to_desktop()
