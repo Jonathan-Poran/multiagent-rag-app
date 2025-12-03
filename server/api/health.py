@@ -1,16 +1,22 @@
 from fastapi import APIRouter
 from server.config.logger import get_logger
 from server.config.settings import settings
-from server.graph.graph import graph
 
 router = APIRouter()
 logger = get_logger("Health")
+
+# Lazy import to avoid circular dependencies
+def _get_graph():
+    """Get graph instance, importing only when needed."""
+    from server.graph.graph import graph
+    return graph
 
 @router.get("/health")
 async def health_check():
     """Health check endpoint to verify the API is running and environment is configured correctly."""
     logger.info("Health check endpoint accessed")
     
+    graph = _get_graph()
     health_status = {
         "status": "healthy",
         "message": "API is running",

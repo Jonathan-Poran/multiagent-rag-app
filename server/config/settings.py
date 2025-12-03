@@ -1,5 +1,7 @@
 import os
 from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
+
 
 class Settings(BaseSettings):
     openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
@@ -14,8 +16,9 @@ class Settings(BaseSettings):
     log_level: str = os.getenv("LOG_LEVEL", "INFO")
     port: int = int(os.environ.get("PORT", "8080"))
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
+    model_config = ConfigDict(
+        env_file=".env",
+        case_sensitive=False
+    )
 
 settings = Settings()

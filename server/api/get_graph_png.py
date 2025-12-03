@@ -3,7 +3,6 @@ import subprocess
 import tempfile
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
-from server.graph.graph import graph
 from server.config.logger import get_logger
 
 router = APIRouter()
@@ -11,6 +10,12 @@ logger = get_logger("GetGraphPNG")
 
 # Store the path to the pre-generated PNG file
 _graph_png_path: str | None = None
+
+# Lazy import to avoid circular dependencies
+def _get_graph():
+    """Get graph instance, importing only when needed."""
+    from server.graph.graph import graph
+    return graph
 
 
 def mermaid_to_png_sync(mermaid_text: str, output_path: str) -> bool:
@@ -86,6 +91,7 @@ def generate_graph_png_at_startup():
     """
     global _graph_png_path
     
+    graph = _get_graph()
     if graph is None:
         logger.warning("Graph is not initialized, cannot generate PNG")
         return
@@ -126,6 +132,7 @@ async def get_graph():
     
     if _graph_png_path is None or not os.path.exists(_graph_png_path):
         # Try to generate it on-demand if not available
+        graph = _get_graph()
         if graph is None:
             raise HTTPException(status_code=503, detail="Graph is not initialized")
         
