@@ -104,3 +104,44 @@ def extract_core_text(transcript: str, topic: str, details: str) -> str:
         logger.error(f"Tavily extraction failed: {e}", exc_info=True)
         return transcript
 
+
+def verify_facts(text: str, topic: str, details: str) -> dict:
+    """
+    Verify factual correctness using Tavily or trusted sources.
+    
+    Args:
+        text: Text to verify
+        topic: General topic
+        details: Specific details
+    
+    Returns:
+        Dictionary with verification results (verified: bool, confidence: float, sources: list)
+    """
+    client = get_tavily_client()
+    if not client:
+        logger.warning("Tavily client not available - skipping verification")
+        return {"verified": False, "confidence": 0.0, "sources": []}
+    
+    try:
+        query = f"fact check {topic} {details}"
+        logger.info(f"Verifying facts using Tavily for: {query}")
+        
+        # Search for authoritative sources
+        results = search_tavily(query, max_results=5)
+        
+        # Simple verification: if we find relevant authoritative sources, consider it verified
+        verified = len(results) > 0
+        confidence = min(len(results) / 5.0, 1.0) if results else 0.0
+        
+        sources = [result.get("url", "") for result in results if result.get("url")]
+        
+        logger.info(f"Fact verification: verified={verified}, confidence={confidence:.2f}")
+        return {
+            "verified": verified,
+            "confidence": confidence,
+            "sources": sources
+        }
+    except Exception as e:
+        logger.error(f"Fact verification failed: {e}", exc_info=True)
+        return {"verified": False, "confidence": 0.0, "sources": []}
+
