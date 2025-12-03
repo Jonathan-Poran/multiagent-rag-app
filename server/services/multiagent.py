@@ -42,30 +42,31 @@ def run_graph_with_state(conversation_state):
         raise HTTPException(status_code=500, detail="Graph returned no messages")
 
 
-async def process_user_input(request: str):
+async def process_user_input(request: str, conversation_id: str):
     """
     Process user input in a chat conversation.
     
     Args:
         request: The user's message text.
+        conversation_id: Unique identifier for the conversation.
     
     Returns:
         dict: Response with AI message text.
     """
-    logger.info(f"Processing user input:\n {request}\n")
+    logger.info(f"Processing user input for conversation {conversation_id}:\n {request}\n")
 
     # Save to DB
     save_user_input(request)
 
     # Add user message to conversation state
-    conversation_state = add_user_message(request)
+    conversation_state = add_user_message(conversation_id, request)
 
     # Run the graph with conversation state
     try:
         ai_response, updated_state = run_graph_with_state(conversation_state)
         
         # Update conversation state with graph output
-        update_conversation_state(updated_state)
+        update_conversation_state(conversation_id, updated_state)
         
         logger.info("Successfully processed user input")
         return {"response": ai_response}
