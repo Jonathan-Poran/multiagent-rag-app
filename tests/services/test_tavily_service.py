@@ -19,7 +19,7 @@ sys.modules['src.graph.nodes.youtube_search_node'] = mock_youtube_node
 sys.modules['src.config.setup_server'] = MagicMock()
 sys.modules['src.api'] = MagicMock()
 sys.modules['src.api.routes'] = MagicMock()
-sys.modules['src.services.multiagent'] = MagicMock()
+sys.modules['src.services.graph_service'] = MagicMock()
 
 # Now import the Tavily service
 from src.services.tavily_service import get_tavily_client
@@ -29,29 +29,38 @@ class TestGetTavilyClient:
     """Tests for get_tavily_client function."""
     
     def test_client_success(self):
-        """Test can get client by env params (no mock)."""
+        """Test can get client by env params using real API key."""
         # Reset the global client cache
         import src.services.tavily_service
         src.services.tavily_service._tavily_client = None
         
-        # Test with actual settings (from env if available, or use patch to simulate)
-        # This tests the real path that uses settings from environment
-        with patch('src.services.tavily_service.settings') as mock_settings, \
-             patch('src.services.tavily_service.TavilyClient') as mock_tavily_client:
-            
-            # Setup - simulate env var being read (no mock on the actual env reading)
-            # We patch settings to simulate what would come from env
-            mock_settings.tavily_api_key = "test_tavily_key_from_env"
-            mock_client_instance = MagicMock()
-            mock_tavily_client.return_value = mock_client_instance
-            
-            # Execute - this tests the path that uses settings (which come from env)
-            client = get_tavily_client()
-            
-            # Assert - client should be created using the env-based settings
-            assert client is not None
-            assert client == mock_client_instance
-            mock_tavily_client.assert_called_once_with(api_key="test_tavily_key_from_env")
+        # Get real API key from environment
+        real_api_key = os.environ.get("TAVILY_API_KEY", "")
+        
+        if not real_api_key:
+            pytest.skip("TAVILY_API_KEY not set in environment - skipping real client test")
+        
+        # Update settings directly with real API key (settings already reads from env, but we ensure it's set)
+        import src.services.tavily_service
+        from src.config.settings import settings
+        settings.tavily_api_key = real_api_key
+        
+        # Execute - this tests the real path that uses settings from environment
+        client = get_tavily_client()
+        
+        # Assert - client should be created successfully with real API key
+        assert client is not None
+        
+        # Actually test the API key by making a real API call
+        try:
+            response = client.search(query="test", max_results=1)
+            # If we get here, the API key is valid
+            assert response is not None
+            # Verify response has expected structure
+            assert hasattr(response, 'results') or isinstance(response, dict)
+        except Exception as e:
+            # If API call fails, the key might be invalid
+            pytest.fail(f"Tavily API key validation failed: {e}")
     
     def test_no_api_key(self):
         """Test that if there's no API key, the right message is raised (returns None)."""
