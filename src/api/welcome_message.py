@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from src.services.mongo import generate_conversation_id
-from src.services.conversation import reset_conversation
+from src.services.mongo_service import generate_conversation_id
+from src.services.conversation_service import reset_conversation
 from src.config.logger import get_logger
 
 router = APIRouter()

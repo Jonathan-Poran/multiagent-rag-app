@@ -6,6 +6,10 @@ from pydantic import ConfigDict
 class Settings(BaseSettings):
     openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
     tavily_api_key: str = os.getenv("TAVILY_API_KEY", "")
+    youtube_api_key: str = os.getenv("YOUTUBE_API_KEY", "")
+    reddit_client_id: str = os.getenv("REDDIT_CLIENT_ID", "")
+    reddit_client_secret: str = os.getenv("REDDIT_CLIENT_SECRET", "")
+    reddit_user_agent: str = os.getenv("REDDIT_USER_AGENT", "multiagent-rag-app/1.0")
     mongodb_uri: str = os.getenv("MONGODB_URI", "")
     mongodb_db_name: str = os.getenv("MONGODB_DB_NAME", "multiagent_rag")
     mongodb_api_user: str = os.getenv("MONGODB_API_USER", "")

@@ -2,7 +2,7 @@ import os
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 from src.config.logger import get_logger
-from src.services.print_graph import get_graph_png_path
+from src.services.print_graph_service import get_graph_png_path
 
 router = APIRouter()
 logger = get_logger("GetGraphPNG")

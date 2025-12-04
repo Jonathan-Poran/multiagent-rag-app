@@ -4,7 +4,7 @@ Transcript fetch node - fetches transcripts for YouTube videos.
 
 from langchain_core.messages import AIMessage
 from ..state import MessageGraph
-from src.services.youtube import fetch_transcript
+from src.services.youtube_service import fetch_transcript
 
 
 def transcript_fetch_node(state: MessageGraph) -> dict:

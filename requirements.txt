@@ -16,6 +16,6 @@ langchain
 langchain-community
 langchain-openai
 langchainhub
-
-beautifulsoup4
 tavily-python
+google-api-python-client
+praw
