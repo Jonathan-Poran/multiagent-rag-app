@@ -181,6 +181,15 @@ This application is configured for deployment on AWS Elastic Beanstalk using Doc
    export AWS_SECRET_ACCESS_KEY=your_secret_key
    export AWS_DEFAULT_REGION=us-east-1
    ```
+   or set enviroment varibles:
+   ```bash 
+   eb setenv \
+   OPENAI_API_KEY=<your-key> \
+   TAVILY_API_KEY=<your-key> \
+   .
+   .
+   .
+   ```
 
 #### Initial Setup
 

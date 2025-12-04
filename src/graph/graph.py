@@ -9,29 +9,13 @@ from langgraph.graph import StateGraph, END
 # Import only nodes and constants
 from src.graph.nodes import (
     topic_extraction_node,
-    youtube_search_node,
-    tbd_search_node,
-    transcript_fetch_node,
-    core_text_extraction_node,
-    relevance_rating_node,
-    fact_verification_node,
-    linkedin_generation_node,
-    instagram_tiktok_generation_node,
-    output_node,
+    find_url_node
 )
 from src.graph.consts import (
     TOPIC_EXTRACTION,
-    YOUTUBE_SEARCH,
-    TBD_SEARCH,
-    TRANSCRIPT_FETCH,
-    CORE_TEXT_EXTRACTION,
-    RELEVANCE_RATING,
-    FACT_VERIFICATION,
-    LINKEDIN_GENERATION,
-    INSTAGRAM_TIKTOK_GENERATION,
-    OUTPUT,
+    FIND_URL
 )
-from src.graph.edges import route_after_topic_extraction, route_after_youtube_search
+from src.graph.edges import route_after_topic_extraction
 from src.graph.state import MessageGraph
 
 # Output path
@@ -44,12 +28,8 @@ builder = StateGraph(state_schema=MessageGraph)
 
 # Add nodes
 builder.add_node(TOPIC_EXTRACTION, topic_extraction_node)
-builder.add_node(YOUTUBE_SEARCH, youtube_search_node)
-# builder.add_node(TBD_SEARCH, tbd_search_node)
-# builder.add_node(TRANSCRIPT_FETCH, transcript_fetch_node)
-# builder.add_node(CORE_TEXT_EXTRACTION, core_text_extraction_node)
-# builder.add_node(RELEVANCE_RATING, relevance_rating_node)
-# builder.add_node(FACT_VERIFICATION, fact_verification_node)
+builder.add_node(FIND_URL, find_url_node)
+
 # builder.add_node(LINKEDIN_GENERATION, linkedin_generation_node)
 # builder.add_node(INSTAGRAM_TIKTOK_GENERATION, instagram_tiktok_generation_node)
 # builder.add_node(OUTPUT, output_node)
@@ -61,8 +41,19 @@ builder.set_entry_point(TOPIC_EXTRACTION)
 builder.add_conditional_edges(
     TOPIC_EXTRACTION,
     route_after_topic_extraction,
-    {TOPIC_EXTRACTION: TOPIC_EXTRACTION, YOUTUBE_SEARCH: YOUTUBE_SEARCH}
+    {TOPIC_EXTRACTION: TOPIC_EXTRACTION, FIND_URL: FIND_URL}
 )
+
+# After topic extraction succeeds, go to find_url_node
+# After find_url_node, end the graph
+builder.add_edge(FIND_URL, END)
+
+# Old workflow (commented out for now)
+# builder.add_conditional_edges(
+#     TOPIC_EXTRACTION,
+#     route_after_topic_extraction,
+#     {TOPIC_EXTRACTION: TOPIC_EXTRACTION, YOUTUBE_SEARCH: YOUTUBE_SEARCH}
+# )
 # builder.add_edge(YOUTUBE_SEARCH, TBD_SEARCH)
 # builder.add_conditional_edges(
 #     TBD_SEARCH,

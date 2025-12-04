@@ -5,6 +5,7 @@ Constants for graph node names.
 # Main workflow nodes
 REFLECT = "reflect"
 TOPIC_EXTRACTION = "topic_extraction"
+FIND_URL = "find_url"
 YOUTUBE_SEARCH = "youtube_search"
 TBD_SEARCH = "tbd_search"
 TRANSCRIPT_FETCH = "transcript_fetch"

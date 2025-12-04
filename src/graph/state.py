@@ -9,6 +9,8 @@ class MessageGraph(TypedDict):
     topic: Optional[str]
     details: Optional[str]
     video_urls: Optional[list[str]]
+    tavily_urls: Optional[list[str]]
+    reddit_urls: Optional[list[str]]
     transcripts: Optional[list[str]]
     core_texts: Optional[list[str]]
     relevance_scores: Optional[list[float]]

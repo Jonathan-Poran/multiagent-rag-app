@@ -1,7 +1,6 @@
 from fastapi import HTTPException
 from src.services.mongo_service import save_user_input
 from src.services.conversation_service import add_user_message, update_conversation_state
-from src.graph.graph import graph
 from src.config.logger import get_logger
 
 logger = get_logger("Graph")
@@ -17,6 +16,9 @@ def run_graph_with_state(conversation_state):
     Returns:
         tuple: (AI response text, updated state)
     """
+    # Lazy import to avoid circular dependency
+    from src.graph.graph import graph
+    
     if graph is None:
         raise HTTPException(
             status_code=503, 
@@ -28,7 +30,7 @@ def run_graph_with_state(conversation_state):
     # Invoke graph with the conversation state
     updated_state = graph.invoke(conversation_state)
     
-    # Get the last message (AI response)
+    # Get the last message (AI response) - this should contain the URLs
     if updated_state["messages"]:
         last_message = updated_state["messages"][-1]
         # Extract content from the message
@@ -39,7 +41,29 @@ def run_graph_with_state(conversation_state):
         logger.info("Graph execution completed successfully")
         return ai_response, updated_state
     else:
-        raise HTTPException(status_code=500, detail="Graph returned no messages")
+        # Fallback: if no messages, try to extract URLs directly from state
+        tavily_urls = updated_state.get("tavily_urls", [])
+        youtube_urls = updated_state.get("youtube_urls", [])
+        reddit_urls = updated_state.get("reddit_urls", [])
+        
+        if tavily_urls or youtube_urls or reddit_urls:
+            # Format URLs as response
+            url_message = "Found viral URLs from the last month:\n\n"
+            if tavily_urls:
+                url_message += f"**Tavily ({len(tavily_urls)} URLs):**\n"
+                for url in tavily_urls:
+                    url_message += f"- {url}\n"
+            if youtube_urls:
+                url_message += f"\n**YouTube ({len(youtube_urls)} URLs):**\n"
+                for url in youtube_urls:
+                    url_message += f"- {url}\n"
+            if reddit_urls:
+                url_message += f"\n**Reddit ({len(reddit_urls)} URLs):**\n"
+                for url in reddit_urls:
+                    url_message += f"- {url}\n"
+            return url_message, updated_state
+        else:
+            raise HTTPException(status_code=500, detail="Graph returned no messages or URLs")
 
 
 async def process_user_input(request: str, conversation_id: str):

@@ -7,7 +7,6 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.api import register_routes
-from src.graph.graph import graph
 from src.config.logger import logger, set_logger_level
 from src.config.settings import settings
 from src.services.print_graph_service import generate_graph_png_at_startup
