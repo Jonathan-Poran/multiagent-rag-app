@@ -140,10 +140,10 @@ Then run the application:
 
 ```bash
 # Using default port 8080
-uvicorn server.server:app --host 0.0.0.0 --port 8080 --reload
+uvicorn src.server:app --host 0.0.0.0 --port 8080 --reload
 
 # Or use PORT from environment variable
-PORT=8080 uvicorn server.server:app --host 0.0.0.0 --port $PORT --reload
+PORT=8080 uvicorn src.server:app --host 0.0.0.0 --port $PORT --reload
 ```
 
 **Access the application:**

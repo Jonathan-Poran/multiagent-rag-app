@@ -19,4 +19,4 @@ COPY . .
 
 EXPOSE 8080
 # Make sure EB's PORT env variable is used
-CMD ["sh", "-c", "exec uvicorn server.server:app --host 0.0.0.0 --port ${PORT:-8080}"]
+CMD ["sh", "-c", "exec uvicorn src.server:app --host 0.0.0.0 --port ${PORT:-8080}"]
