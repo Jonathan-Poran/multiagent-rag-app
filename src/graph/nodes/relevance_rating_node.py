@@ -2,9 +2,9 @@
 Relevance rating node - rates how well core text matches user request.
 """
 
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage, HumanMessage
 from ..state import MessageGraph
-from ..chains import relevance_rating_chain
+from src.services.openai_service import rate_relevance
 
 
 def relevance_rating_node(state: MessageGraph) -> dict:
@@ -19,7 +19,6 @@ def relevance_rating_node(state: MessageGraph) -> dict:
     """
     core_texts = state.get("core_texts", [])
     # Get the first user message (original request)
-    from langchain_core.messages import HumanMessage
     user_message = ""
     for msg in state["messages"]:
         if isinstance(msg, HumanMessage):
@@ -28,11 +27,8 @@ def relevance_rating_node(state: MessageGraph) -> dict:
     
     relevance_scores = []
     for core_text in core_texts:
-        # Use relevance rating chain to score each text
-        result = relevance_rating_chain.invoke({
-            "user_request": user_message,
-            "core_text": core_text
-        })
+        # Use OpenAI service to rate relevance
+        result = rate_relevance(user_message, core_text)
         relevance_scores.append(result.relevance_score)
     
     return {

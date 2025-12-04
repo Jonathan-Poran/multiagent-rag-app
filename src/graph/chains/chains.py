@@ -1,19 +1,14 @@
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_openai import ChatOpenAI
-from pydantic import BaseModel, Field
-from src.config.settings import settings
+from src.services.openai_service import (
+    get_openai_client,
+    get_openai_structured_client,
+    get_openai_relevance_client,
+    ContentStructure,
+    RelevanceScore
+)
 
 
-class ContentStructure(BaseModel):
-    """Structure for organizing social media content requests."""
-    topic: str = Field(description="General topic category (e.g., fashion, sports, tech, food, travel, health, entertainment, business, education)")
-    details: str = Field(description="Specific sub-topic or detailed content description (e.g., 'football, european league' for sports, 'new langgraph tools' for tech)")
-
-
-class RelevanceScore(BaseModel):
-    """Structure for relevance rating output."""
-    relevance_score: float = Field(description="Relevance score from 0.0 to 1.0", ge=0.0, le=1.0)
-    explanation: str = Field(description="Brief explanation of the relevance score")
+# ContentStructure and RelevanceScore are now imported from openai_service
 
 
 # Predefined topics list for the prompt
@@ -113,15 +108,92 @@ instagram_tiktok_generation_prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
-llm = ChatOpenAI(api_key=settings.openai_api_key, model="gpt-4")
-llm_structured = ChatOpenAI(api_key=settings.openai_api_key).with_structured_output(ContentStructure)
-llm_relevance = ChatOpenAI(api_key=settings.openai_api_key).with_structured_output(RelevanceScore)
+# Get LLM instances from OpenAI service (lazy initialization)
+# Note: These chains are kept for backward compatibility but nodes should use openai_service directly
+# The chains will be initialized when first accessed
 
-# Chains
-topic_extraction_chain = topic_extraction_prompt | llm_structured
-relevance_rating_chain = relevance_rating_prompt | llm_relevance
-linkedin_generation_chain = linkedin_generation_prompt | llm
-instagram_tiktok_generation_chain = instagram_tiktok_generation_prompt | llm
+_llm = None
+_llm_structured = None
+_llm_relevance = None
+
+def _get_llm():
+    """Get OpenAI client (lazy initialization)."""
+    global _llm
+    if _llm is None:
+        _llm = get_openai_client()
+        if _llm is None:
+            raise ValueError("OpenAI client not available - OPENAI_API_KEY not configured")
+    return _llm
+
+def _get_llm_structured():
+    """Get OpenAI structured client (lazy initialization)."""
+    global _llm_structured
+    if _llm_structured is None:
+        _llm_structured = get_openai_structured_client()
+        if _llm_structured is None:
+            raise ValueError("OpenAI structured client not available - OPENAI_API_KEY not configured")
+    return _llm_structured
+
+def _get_llm_relevance():
+    """Get OpenAI relevance client (lazy initialization)."""
+    global _llm_relevance
+    if _llm_relevance is None:
+        _llm_relevance = get_openai_relevance_client()
+        if _llm_relevance is None:
+            raise ValueError("OpenAI relevance client not available - OPENAI_API_KEY not configured")
+    return _llm_relevance
+
+# Chains (lazy initialization - will fail if API key not configured)
+# These are kept for backward compatibility but nodes should use openai_service directly
+# We create wrapper chains that lazily initialize the LLMs
+class _LazyChain:
+    """Lazy chain wrapper that initializes LLM on first invocation."""
+    def __init__(self, prompt, get_llm_func):
+        self.prompt = prompt
+        self.get_llm = get_llm_func
+        self._chain = None
+    
+    def invoke(self, *args, **kwargs):
+        if self._chain is None:
+            self._chain = self.prompt | self.get_llm()
+        return self._chain.invoke(*args, **kwargs)
+    
+    def __or__(self, other):
+        # Support chain composition
+        if self._chain is None:
+            self._chain = self.prompt | self.get_llm()
+        return self._chain | other
+
+topic_extraction_chain = _LazyChain(topic_extraction_prompt, _get_llm_structured)
+relevance_rating_chain = _LazyChain(relevance_rating_prompt, _get_llm_relevance)
+linkedin_generation_chain = _LazyChain(linkedin_generation_prompt, _get_llm)
+instagram_tiktok_generation_chain = _LazyChain(instagram_tiktok_generation_prompt, _get_llm)
+
+# LLM instances (for backward compatibility - lazy access)
+class _LazyLLM:
+    """Lazy LLM wrapper."""
+    def __init__(self, get_llm_func):
+        self.get_llm = get_llm_func
+        self._llm = None
+    
+    def __call__(self, *args, **kwargs):
+        if self._llm is None:
+            self._llm = self.get_llm()
+        return self._llm(*args, **kwargs)
+    
+    def __getattr__(self, name):
+        if self._llm is None:
+            self._llm = self.get_llm()
+        return getattr(self._llm, name)
+    
+    def __or__(self, other):
+        if self._llm is None:
+            self._llm = self.get_llm()
+        return self._llm | other
+
+llm = _LazyLLM(_get_llm)
+llm_structured = _LazyLLM(_get_llm_structured)
+llm_relevance = _LazyLLM(_get_llm_relevance)
 
 # Legacy chains (kept for backward compatibility)
 generation_chain = topic_extraction_chain

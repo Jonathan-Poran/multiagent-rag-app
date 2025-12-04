@@ -4,9 +4,9 @@ Topic extraction node - extracts topic and details from user message.
 
 import json
 from langchain_core.messages import AIMessage, HumanMessage
-from ..chains import topic_extraction_chain
 from ..state import MessageGraph
 from ..consts import PREDEFINED_TOPICS
+from src.services.openai_service import extract_topic_and_details
 
 
 def topic_extraction_node(state: MessageGraph) -> dict:
@@ -20,7 +20,7 @@ def topic_extraction_node(state: MessageGraph) -> dict:
     Returns:
         dict: Updated state with topic and details, or a message asking for clarification.
     """
-    result = topic_extraction_chain.invoke({"messages": state["messages"]})
+    result = extract_topic_and_details(state["messages"])
     
     # If topic is empty, return a friendly message asking for more specificity
     if not result.topic or result.topic.strip() == "":

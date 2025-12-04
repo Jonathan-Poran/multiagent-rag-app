@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from src.dto import ChatRequest, ChatResponse
-from src.services.multiagent_service import process_user_input
+from src.services.graph_service import process_user_input
 from src.config.logger import get_logger
 
 router = APIRouter()

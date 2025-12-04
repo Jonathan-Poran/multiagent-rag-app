@@ -4,7 +4,7 @@ from src.services.conversation_service import add_user_message, update_conversat
 from src.graph.graph import graph
 from src.config.logger import get_logger
 
-logger = get_logger("Multiagent")
+logger = get_logger("Graph")
 
 
 def run_graph_with_state(conversation_state):
