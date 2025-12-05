@@ -3,7 +3,6 @@ Find URL node - finds 2 viral URLs from the last month from each service (Tavily
 """
 
 from datetime import datetime, timedelta
-from langchain_core.messages import AIMessage
 from src.graph.state import MessageGraph
 from src.services.youtube_service import get_youtube_client
 from src.services.tavily_service import get_tavily_client, search_tavily
@@ -229,63 +228,40 @@ def _get_reddit_urls(topic: str, details: str, limit: int = 2) -> list[str]:
 
 def find_url_node(state: MessageGraph) -> dict:
     """
-    Find 2 viral URLs from the last month from each service (Tavily, YouTube, Reddit).
+    Find 3 viral URLs from the last month from each service (Tavily, YouTube, Reddit).
     
     Args:
         state: The current graph state containing topic and details.
     
     Returns:
-        dict: Updated state with URLs from each service.
+        dict: Updated state with combined URLs list.
     """
+
+    MAX_URLS = 2
     topic = state.get("topic", "")
     details = state.get("details", "")
     
     if not topic:
         logger.warning("No topic found in state, cannot search for URLs")
         return {
-            "tavily_urls": [],
-            "youtube_urls": [],
-            "reddit_urls": [],
-            "messages": [AIMessage(content="No topic found, cannot search for URLs")]
+            "urls": []
         }
     
     logger.info(f"Finding viral URLs for topic: {topic}, details: {details}")
     
     # Get URLs from each service (2 from each)
-    tavily_urls = _get_tavily_urls(topic, details, limit=2)
-    youtube_urls = _get_youtube_urls(topic, details, limit=2)
-    reddit_urls = _get_reddit_urls(topic, details, limit=2)
+    tavily_urls = _get_tavily_urls(topic, details, limit=MAX_URLS)
+    youtube_urls = _get_youtube_urls(topic, details, limit=MAX_URLS)
+    reddit_urls = _get_reddit_urls(topic, details, limit=MAX_URLS)
     
-    # Combine all URLs
-    all_urls = {
-        "tavily": tavily_urls,
-        "youtube": youtube_urls,
-        "reddit": reddit_urls
-    }
+    # Combine all URLs into a single list
+    all_urls = tavily_urls + youtube_urls + reddit_urls
     
-    total_urls = len(tavily_urls) + len(youtube_urls) + len(reddit_urls)
+    total_urls = len(all_urls)
     
     logger.info(f"Found {total_urls} total URLs: {len(tavily_urls)} from Tavily, {len(youtube_urls)} from YouTube, {len(reddit_urls)} from Reddit")
     
-    # Format URLs for user response
-    url_message = f"Found {total_urls} viral URLs from the last month:\n\n"
-    if tavily_urls:
-        url_message += f"**Tavily ({len(tavily_urls)} URLs):**\n"
-        for url in tavily_urls:
-            url_message += f"- {url}\n"
-    if youtube_urls:
-        url_message += f"\n**YouTube ({len(youtube_urls)} URLs):**\n"
-        for url in youtube_urls:
-            url_message += f"- {url}\n"
-    if reddit_urls:
-        url_message += f"\n**Reddit ({len(reddit_urls)} URLs):**\n"
-        for url in reddit_urls:
-            url_message += f"- {url}\n"
-    
     return {
-        "tavily_urls": tavily_urls,
-        "youtube_urls": youtube_urls,
-        "reddit_urls": reddit_urls,
-        "messages": [AIMessage(content=url_message)]
+        "urls": all_urls
     }
 

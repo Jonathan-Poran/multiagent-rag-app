@@ -8,6 +8,7 @@ class MessageGraph(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     topic: Optional[str]
     details: Optional[str]
+    urls: Optional[list[str]]
     video_urls: Optional[list[str]]
     tavily_urls: Optional[list[str]]
     reddit_urls: Optional[list[str]]

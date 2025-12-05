@@ -12,6 +12,9 @@ from src.graph.consts import PREDEFINED_TOPICS
 
 logger = get_logger("OpenAI")
 
+# Token limits: roughly 1 token = 4 characters
+MAX_SOURCE_CONTENT_LENGTH = 24000
+
 _openai_client: Optional[ChatOpenAI] = None
 _openai_structured_client: Optional[Any] = None
 _openai_relevance_client: Optional[Any] = None
@@ -79,6 +82,34 @@ def get_openai_structured_client() -> Optional[Any]:
     except Exception as e:
         logger.error(f"Failed to initialize OpenAI structured client: {e}", exc_info=True)
         return None
+
+
+def truncate_source_content(source_content: str, max_length: int = MAX_SOURCE_CONTENT_LENGTH) -> str:
+    """
+    Truncate source content to fit within token limits.
+    
+    Args:
+        source_content: The source content to truncate
+        max_length: Maximum character length (default: 24,000 chars ≈ 6,000 tokens)
+    
+    Returns:
+        Truncated source content
+    """
+    if len(source_content) <= max_length:
+        return source_content
+    
+    # Truncate and add indicator
+    truncated = source_content[:max_length]
+    # Try to cut at a sentence boundary
+    last_period = truncated.rfind('.')
+    last_newline = truncated.rfind('\n')
+    cut_point = max(last_period, last_newline)
+    
+    if cut_point > max_length * 0.9:  # Only use cut point if it's not too early
+        truncated = truncated[:cut_point + 1]
+    
+    logger.warning(f"Source content truncated from {len(source_content)} to {len(truncated)} characters to fit token limits")
+    return truncated + "\n\n[Content truncated due to length limits...]"
 
 
 def get_openai_relevance_client() -> Optional[Any]:
@@ -222,6 +253,9 @@ def generate_linkedin_content(topic: str, details: str, source_content: str) -> 
     if not client:
         raise ValueError("OpenAI client not available - OPENAI_API_KEY not configured")
     
+    # Truncate source content to fit within token limits
+    truncated_content = truncate_source_content(source_content)
+    
     linkedin_generation_prompt = ChatPromptTemplate.from_messages(
         [
             (
@@ -247,7 +281,7 @@ def generate_linkedin_content(topic: str, details: str, source_content: str) -> 
     result = chain.invoke({
         "topic": topic,
         "details": details,
-        "source_content": source_content
+        "source_content": truncated_content
     })
     
     content = result.content if hasattr(result, 'content') else str(result)
@@ -255,7 +289,7 @@ def generate_linkedin_content(topic: str, details: str, source_content: str) -> 
     return content
 
 
-def generate_instagram_tiktok_script(topic: str, details: str, source_content: str) -> str:
+def generate_video_script(topic: str, details: str, source_content: str) -> str:
     """
     Generate Instagram/TikTok video script using OpenAI.
     
@@ -272,6 +306,9 @@ def generate_instagram_tiktok_script(topic: str, details: str, source_content: s
     client = get_openai_client()
     if not client:
         raise ValueError("OpenAI client not available - OPENAI_API_KEY not configured")
+    
+    # Truncate source content to fit within token limits
+    truncated_content = truncate_source_content(source_content)
     
     instagram_tiktok_generation_prompt = ChatPromptTemplate.from_messages(
         [
@@ -298,7 +335,7 @@ def generate_instagram_tiktok_script(topic: str, details: str, source_content: s
     result = chain.invoke({
         "topic": topic,
         "details": details,
-        "source_content": source_content
+        "source_content": truncated_content
     })
     
     content = result.content if hasattr(result, 'content') else str(result)

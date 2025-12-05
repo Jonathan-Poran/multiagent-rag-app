@@ -31,7 +31,7 @@ from src.services.openai_service import (
     extract_topic_and_details,
     rate_relevance,
     generate_linkedin_content,
-    generate_instagram_tiktok_script
+    generate_video_script
 )
 
 

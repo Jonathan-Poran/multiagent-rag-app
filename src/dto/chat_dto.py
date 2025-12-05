@@ -21,31 +21,6 @@ class UserMessage(BaseModel):
         examples=["507f1f77bcf86cd799439011"]
     )
 
-class ChatRequest(BaseModel):
-    """Request DTO for user chat messages."""
-    
-    text: str = Field(
-        ...,
-        description="The user's message text",
-        min_length=1,
-        max_length=5000,
-        examples=["I want to create content about AI and machine learning"]
-    )
-    conversation_id: str = Field(
-        ...,
-        description="Unique identifier for the conversation",
-        min_length=1,
-        examples=["507f1f77bcf86cd799439011"]
-    )
-    
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "text": "I want to create content about AI and machine learning",
-                "conversation_id": "507f1f77bcf86cd799439011"
-            }
-        }
-
 
 class ChatResponse(BaseModel):
     """Response DTO for AI chat messages."""

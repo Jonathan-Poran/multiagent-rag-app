@@ -1,3 +1,5 @@
 from .topic_extraction_node import topic_extraction_node
 from .find_url_node import find_url_node
 from .check_recent_urls_node import check_recent_urls_node
+from .core_text_extraction_node import core_text_extraction_node
+from .generate_contant_node import generate_contant_node

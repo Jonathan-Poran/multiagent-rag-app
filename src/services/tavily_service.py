@@ -64,6 +64,82 @@ def search_tavily(query: str, max_results: int = 5) -> List[dict]:
         return []
 
 
+def extract_core_text_from_urls(urls: list[str], topic: str, details: str) -> str:
+    """
+    Extract core relevant text from a URL using Tavily extract API.
+    
+    Args:
+        url: URL to extract content from
+        topic: General topic
+        details: Specific details
+    
+    Returns:
+        Extracted core text relevant to topic/details
+    """
+    client = get_tavily_client()
+    if not client:
+        logger.warning("Tavily client not available - cannot extract from URL")
+        return ""
+    
+    try:
+        query = f"{topic} {details}".strip()
+        logger.info(f"Extracting core text from {len(urls)} URLs using Tavily for: {query}")
+        
+        # Pass urls directly (it's already a list)
+        response = client.extract(urls=urls, include_images=False)
+        
+        # Debug: log response type and structure
+        logger.debug(f"Tavily extract response type: {type(response)}")
+        if isinstance(response, (dict, list)):
+            logger.debug(f"Tavily extract response length/structure: {len(response) if isinstance(response, (list, dict)) else 'N/A'}")
+        
+        content = ""
+
+        # Handle different response formats
+        if isinstance(response, dict):
+            # If response is a dict, check for 'results' or 'content' keys
+            results = response.get("results", [])
+            if not results:
+                # Try 'content' as a direct string
+                content = response.get("content", "")
+                if content:
+                    logger.info(f"Extracted {len(content)} characters from response content")
+                    return content
+        elif isinstance(response, list):
+            # If response is a list, iterate through results
+            results = response
+        else:
+            logger.warning(f"Unexpected response type: {type(response)}")
+            results = []
+
+        # Process results list
+        for result in results:
+            if isinstance(result, dict):
+                # Extract content from result dict
+                raw_content = result.get('raw_content', '') or result.get('content', '')
+                if raw_content:
+                    content += raw_content + "\n\n"
+                    url = result.get('url', 'unknown')
+                    logger.debug(f"Extracted {len(raw_content)} characters from {url}")
+            elif isinstance(result, str):
+                # If result is a string, use it directly
+                content += result + "\n\n"
+            else:
+                logger.warning(f"Unexpected result type: {type(result)}")
+
+        if not content:
+            logger.warning(f"No content extracted from urls: {urls}")
+            return ""
+        
+        logger.info(f"Extracted {len(content)} characters of core text from {len(urls)} URLs")
+        
+        return content.strip()
+
+    except Exception as e:
+        logger.error(f"Tavily extraction from URLs failed: {e}", exc_info=True)
+        return ""
+
+
 def extract_core_text(transcript: str, topic: str, details: str) -> str:
     """
     Extract core relevant text from transcript using Tavily extract.

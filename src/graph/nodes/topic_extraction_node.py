@@ -51,6 +51,6 @@ def topic_extraction_node(state: MessageGraph) -> dict:
     return {
         "topic": result.topic,
         "details": result.details,
-        "messages": [AIMessage(content=f"Extracted topic: {result.topic}, details: {result.details}")]
+        "messages": [AIMessage(content=f"Topic: {result.topic}, details: {result.details}")]
     }
 

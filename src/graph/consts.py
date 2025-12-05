@@ -6,6 +6,8 @@ Constants for graph node names.
 TOPIC_EXTRACTION = "topic_extraction"
 FIND_URL = "find_url"
 CHECK_RECENT_URLS = "check_recent_urls"
+CORE_TEXT_EXTRACTION = "core_text_extraction"
+CONTENT_GENERATION = "content_generation"
 
 
 # Predefined topics that the agent can handle
