@@ -4,11 +4,12 @@ Find URL node - finds 2 viral URLs from the last month from each service (Tavily
 
 from datetime import datetime, timedelta
 from langchain_core.messages import AIMessage
-from ..state import MessageGraph
+from src.graph.state import MessageGraph
 from src.services.youtube_service import get_youtube_client
 from src.services.tavily_service import get_tavily_client, search_tavily
 from src.services.reddit_service import get_reddit_client, search_reddit_posts
 from src.config.logger import get_logger
+
 
 logger = get_logger("FindURL")
 

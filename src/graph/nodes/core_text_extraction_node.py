@@ -3,7 +3,7 @@ Core text extraction node - extracts relevant text from transcripts using Tavily
 """
 
 from langchain_core.messages import AIMessage
-from ..state import MessageGraph
+from src.graph.state import MessageGraph
 from src.services.tavily_service import extract_core_text
 
 

@@ -3,8 +3,8 @@ Routing function after topic extraction.
 Routes based on whether topic was successfully extracted.
 """
 
-from ..state import MessageGraph
-from ..consts import TOPIC_EXTRACTION, FIND_URL
+from src.graph.state import MessageGraph
+from src.graph.consts import TOPIC_EXTRACTION, FIND_URL
 
 
 def route_after_topic_extraction(state: MessageGraph) -> str:

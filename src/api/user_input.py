@@ -18,13 +18,9 @@ async def user_input(req: UserMessage):
     Returns:
         ChatResponse: Response with AI message text and conversation_id.
     """
-    logger.info(f"Received chat message for conversation: {req.conversation_id}")
+    logger.info(f"Received chat for conversation {req.conversation_id}")
     try:
-        result = routeInputToGraph(req)
-        logger.info("Chat message processed successfully")
-        
-        # result is already a ChatResponse object
-        return result
+        return routeInputToGraph(req)
     except Exception as e:
-        logger.error(f"Error processing chat message: {e}", exc_info=True)
+        logger.error(f"Error processing chat: {e}", exc_info=True)
         raise

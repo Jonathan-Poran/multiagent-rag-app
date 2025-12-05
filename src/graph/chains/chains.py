@@ -13,7 +13,7 @@ from src.services.openai_service import (
 
 # Predefined topics list for the prompt
 # Import from consts to keep topics centralized
-from ..consts import PREDEFINED_TOPICS
+from src.graph.consts import PREDEFINED_TOPICS
 
 TOPICS_LIST = ", ".join(PREDEFINED_TOPICS)
 

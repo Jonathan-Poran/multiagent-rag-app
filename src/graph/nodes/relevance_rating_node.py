@@ -3,7 +3,7 @@ Relevance rating node - rates how well core text matches user request.
 """
 
 from langchain_core.messages import AIMessage, HumanMessage
-from ..state import MessageGraph
+from src.graph.state import MessageGraph
 from src.services.openai_service import rate_relevance
 
 

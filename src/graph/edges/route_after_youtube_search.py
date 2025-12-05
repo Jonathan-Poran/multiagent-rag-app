@@ -3,9 +3,8 @@ Routing function after YouTube search.
 Routes based on whether videos were found.
 """
 
-from ..state import MessageGraph
-from ..consts import TRANSCRIPT_FETCH, CORE_TEXT_EXTRACTION
-
+from src.graph.state import MessageGraph
+from src.graph.consts import TRANSCRIPT_FETCH, CORE_TEXT_EXTRACTION
 
 def route_after_youtube_search(state: MessageGraph) -> str:
     """
