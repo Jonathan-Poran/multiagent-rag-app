@@ -5,6 +5,7 @@ Adds project root to Python path for imports.
 
 import sys
 import os
+import warnings
 from pathlib import Path
 
 # Get the project root (1 level up from this file: tests/conftest.py)
@@ -16,4 +17,14 @@ if str(project_root) not in sys.path:
 
 # Also set PYTHONPATH environment variable for subprocesses
 os.environ.setdefault('PYTHONPATH', str(project_root))
+
+# Suppress Pydantic deprecation warnings in tests only
+import pytest
+
+def pytest_configure(config):
+    """Configure pytest to ignore Pydantic deprecation warnings."""
+    config.addinivalue_line(
+        "filterwarnings",
+        "ignore::pydantic.warnings.PydanticDeprecatedSince20"
+    )
 

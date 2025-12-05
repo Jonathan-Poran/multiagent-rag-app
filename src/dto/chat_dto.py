@@ -40,6 +40,11 @@ class ChatResponse(BaseModel):
         description="Whether the chat is complete",
         examples=[True]
     )
+    awaiting_user_input: bool = Field(
+        default=False,
+        description="Whether the chat is waiting for user input",
+        examples=[False]
+    )
     
     class Config:
         json_schema_extra = {

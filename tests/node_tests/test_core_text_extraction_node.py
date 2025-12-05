@@ -2,9 +2,24 @@
 Tests for core text extraction node.
 """
 
+import sys
 import pytest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from langchain_core.messages import AIMessage
+
+# *** Mocking & Setup ***
+# Prevent heavy or circular imports from graph.py and config
+sys.modules['src.graph.graph'] = MagicMock()
+sys.modules['src.config.setup_server'] = MagicMock()
+
+# Ensure src.graph and src.config remain packages
+try:
+    import src.graph
+    import src.config
+except Exception:
+    pass  # src.graph and src.config exist; their submodules are mocked
+
+# Now import the core text extraction node safely
 from src.graph.nodes.core_text_extraction_node import core_text_extraction_node
 from src.dto.graph_dto import MessageGraph
 
