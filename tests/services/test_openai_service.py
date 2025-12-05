@@ -25,9 +25,8 @@ sys.modules['src.services.graph_service'] = MagicMock()
 
 # Now import the OpenAI service
 from src.services.openai_service import (
-    get_openai_client,
-    get_openai_structured_client,
-    get_openai_relevance_client,
+    _get_openai_client,
+    _get_openai_structured_client,
     extract_topic_and_details,
     rate_relevance,
     generate_linkedin_content,
@@ -55,7 +54,7 @@ class TestGetOpenAIClient:
         settings.openai_api_key = real_api_key
         
         # Execute - this tests the real path that uses settings from environment
-        client = get_openai_client()
+        client = _get_openai_client()
         
         # Assert - client should be created successfully with real API key
         assert client is not None
@@ -82,7 +81,7 @@ class TestGetOpenAIClient:
             mock_settings.openai_api_key = ""
             
             # Execute
-            client = get_openai_client()
+            client = _get_openai_client()
             
             # Assert - should return None when no API key
             assert client is None
@@ -102,8 +101,8 @@ class TestGetOpenAIClient:
             mock_chat_openai.return_value = mock_client_instance
             
             # Execute - call twice
-            client1 = get_openai_client()
-            client2 = get_openai_client()
+            client1 = _get_openai_client()
+            client2 = _get_openai_client()
             
             # Assert - should be the same instance and ChatOpenAI should only be called once
             assert client1 is not None

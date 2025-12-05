@@ -272,3 +272,63 @@ eb setenv OPENAI_API_KEY=your_key \
 - **Port Issues**: Ensure PORT environment variable is set (EB sets this automatically)
 - **Graph Not Working**: Verify OPENAI_API_KEY is set in environment variables
 - **View Logs**: Use `eb logs` to see application logs and errors
+
+## Testing
+
+The project uses `pytest` for testing. Tests are organized in the `tests/` directory with separate subdirectories for different test types.
+
+### Prerequisites
+
+Make sure you have:
+1. Activated your virtual environment
+2. Installed all dependencies: `pip install -r requirements.txt`
+3. Set up your `.env` file with test API keys (if needed for integration tests)
+
+### Running Tests
+
+#### Run All Tests
+
+To run all tests in the project:
+
+```bash
+pytest
+```
+
+#### Run Tests with Verbose Output
+
+For more detailed output:
+
+```bash
+pytest -v
+```
+
+Or for even more verbose output:
+
+```bash
+pytest -vv
+```
+
+#### Run Specific Test Categories
+
+**Run all service tests:**
+```bash
+pytest tests/services/
+```
+
+#### Run Specific Test Files
+
+To run a specific test file:
+
+```bash
+pytest tests/services/test_tavily_service.py
+```
+
+#### Test Configuration
+
+The test configuration is defined in `pytest.ini`:
+- Test paths: `tests/`
+- Python path: `.` (project root)
+- Test file pattern: `test_*.py`
+- Test class pattern: `Test*`
+- Test function pattern: `test_*`
+- Default options: `-v --tb=short` (verbose output, short traceback format)

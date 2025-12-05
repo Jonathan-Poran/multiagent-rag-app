@@ -57,15 +57,15 @@ def test_topic_extraction_node_regular_input_with_details():
         "details": None,
     }
 
-    with patch("src.graph.nodes.topic_extraction_node.topic_extraction_chain") as mock_chain:
+    with patch("src.graph.nodes.topic_extraction_node.extract_topic_and_details") as mock_extract:
         mock_result = Mock()
         mock_result.topic = expected_topic
         mock_result.details = "AI and machine learning"
-        mock_chain.invoke.return_value = mock_result
+        mock_extract.return_value = mock_result
 
         result = topic_extraction_node(state)
 
-        mock_chain.invoke.assert_called_once_with({"messages": state["messages"]})
+        mock_extract.assert_called_once_with(state["messages"])
 
         assert result["topic"] == expected_topic
 
@@ -95,11 +95,11 @@ def test_topic_extraction_node_input_without_details():
         "details": None,
     }
 
-    with patch("src.graph.nodes.topic_extraction_node.topic_extraction_chain") as mock_chain:
+    with patch("src.graph.nodes.topic_extraction_node.extract_topic_and_details") as mock_extract:
         mock_result = Mock()
         mock_result.topic = "sports"
         mock_result.details = ""
-        mock_chain.invoke.return_value = mock_result
+        mock_extract.return_value = mock_result
 
         result = topic_extraction_node(state)
 
@@ -124,11 +124,11 @@ def test_topic_extraction_node_nonsensical_text():
         "details": None,
     }
 
-    with patch("src.graph.nodes.topic_extraction_node.topic_extraction_chain") as mock_chain:
+    with patch("src.graph.nodes.topic_extraction_node.extract_topic_and_details") as mock_extract:
         mock_result = Mock()
         mock_result.topic = ""
         mock_result.details = ""
-        mock_chain.invoke.return_value = mock_result
+        mock_extract.return_value = mock_result
 
         result = topic_extraction_node(state)
 
@@ -160,11 +160,11 @@ def test_topic_extraction_node_empty_topic_returns_friendly_message():
         "details": None,
     }
 
-    with patch("src.graph.nodes.topic_extraction_node.topic_extraction_chain") as mock_chain:
+    with patch("src.graph.nodes.topic_extraction_node.extract_topic_and_details") as mock_extract:
         mock_result = Mock()
         mock_result.topic = ""  # Empty topic
         mock_result.details = ""
-        mock_chain.invoke.return_value = mock_result
+        mock_extract.return_value = mock_result
 
         result = topic_extraction_node(state)
 
