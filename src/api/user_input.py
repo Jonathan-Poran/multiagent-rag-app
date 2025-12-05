@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from src.dto import ChatRequest, ChatResponse
-from src.services.graph_service import process_user_input
+from src.dto import ChatResponse, UserMessage
+from src.services.graph_factory_service import routeInputToGraph
 from src.config.logger import get_logger
 
 router = APIRouter()
@@ -8,7 +8,7 @@ logger = get_logger("FastAPI_Server")
 
 
 @router.post("", response_model=ChatResponse)
-async def user_input(req: ChatRequest):
+async def user_input(req: UserMessage):
     """
     Handle user chat message in a conversation.
     
@@ -20,11 +20,11 @@ async def user_input(req: ChatRequest):
     """
     logger.info(f"Received chat message for conversation: {req.conversation_id}")
     try:
-        result = await process_user_input(req.text, req.conversation_id)
+        result = routeInputToGraph(req)
         logger.info("Chat message processed successfully")
         
-        # Convert result to ChatResponse
-        return ChatResponse(**result)
+        # result is already a ChatResponse object
+        return result
     except Exception as e:
         logger.error(f"Error processing chat message: {e}", exc_info=True)
         raise

@@ -4,6 +4,22 @@ Chat-related DTOs for user input and AI responses.
 
 from pydantic import BaseModel, Field
 
+class UserMessage(BaseModel):
+    """Request DTO for user chat messages."""
+    
+    text: str = Field(
+        ...,
+        description="The user's message text",
+        min_length=1,
+        max_length=5000,
+        examples=["I want to create content about AI and machine learning"]
+    )
+    conversation_id: str = Field(
+        ...,
+        description="Unique identifier for the conversation",
+        min_length=1,
+        examples=["507f1f77bcf86cd799439011"]
+    )
 
 class ChatRequest(BaseModel):
     """Request DTO for user chat messages."""
@@ -44,6 +60,11 @@ class ChatResponse(BaseModel):
         description="The conversation ID this response belongs to",
         examples=["507f1f77bcf86cd799439011"]
     )
+    chat_complete: bool = Field(
+        ...,
+        description="Whether the chat is complete",
+        examples=[True]
+    )
     
     class Config:
         json_schema_extra = {
@@ -52,4 +73,3 @@ class ChatResponse(BaseModel):
                 "conversation_id": "507f1f77bcf86cd799439011"
             }
         }
-

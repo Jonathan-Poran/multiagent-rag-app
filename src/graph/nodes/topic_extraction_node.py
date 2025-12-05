@@ -1,8 +1,6 @@
 """
 Topic extraction node - extracts topic and details from user message.
 """
-
-import json
 from langchain_core.messages import AIMessage, HumanMessage
 from ..state import MessageGraph
 from ..consts import PREDEFINED_TOPICS
@@ -33,7 +31,7 @@ def topic_extraction_node(state: MessageGraph) -> dict:
         
         # Create a friendly message with examples of topics we can handle
         topics_examples = ", ".join(PREDEFINED_TOPICS[:5])  # Show first 10 as examples
-        friendly_message = f"""I'd be happy to help you create social media content! 
+        topic_extracted_failure_message = f"""I'd be happy to help you create social media content! 
 
         However, I need a bit more clarity on what topic you'd like to focus on. Could you please specify what kind of content you want to create?
         Here are some topics I can help with: {topics_examples}, and more!
@@ -46,7 +44,7 @@ def topic_extraction_node(state: MessageGraph) -> dict:
         return {
             "topic": "",
             "details": "",
-            "messages": [AIMessage(content=friendly_message)]
+            "messages": [AIMessage(content=topic_extracted_failure_message)]
         }
     
     # Normal case: topic was extracted successfully
