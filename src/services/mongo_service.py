@@ -14,18 +14,26 @@ logger = get_logger("Mongo")
 _client = None
 _collection = None
 
-def get_collection():
-    global _client, _collection
-
-    if _collection is not None:
-        return _collection
-
+def get_collection(collection_name: str = "inputs"):
+    """
+    Get MongoDB collection instance.
+    
+    Args:
+        collection_name: Name of the collection. Defaults to "inputs".
+    
+    Returns:
+        MongoDB collection instance or None if connection fails.
+    """
+    global _client
+    
     try:
-        _client = MongoClient(settings.mongodb_uri)
+        if _client is None:
+            _client = MongoClient(settings.mongodb_uri)
+        
         db = _client[settings.mongodb_db_name]
-        _collection = db["inputs"]
-        logger.info("Connected to MongoDB successfully")
-        return _collection
+        collection = db[collection_name]
+        logger.info(f"Connected to MongoDB collection '{collection_name}' successfully")
+        return collection
     except Exception as e:
         logger.error(f"MongoDB connection failed: {e}", exc_info=True)
         return None
@@ -97,3 +105,41 @@ def save_url_with_topic(url: str, topic: str) -> None:
     except Exception as e:
         logger.error(f"MongoDB insertion failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"MongoDB insertion failed: {e}")
+
+
+def save_relevance_data(topic: str, details: str, url: str, core_text: str, date: datetime = None) -> None:
+    """
+    Save relevance data to MongoDB (Topic and data).
+    Saves topic, details, url, core_text, and date for each URL/core_text combination.
+    
+    Args:
+        topic (str): The topic.
+        details (str): The details.
+        url (str): The URL.
+        core_text (str): The core text extracted from the URL.
+        date (datetime, optional): The date. Defaults to current UTC time.
+    """
+    # Use "Topic and data" collection as specified
+    collection = get_collection("Topic and data")
+    if collection is None:
+        logger.warning("MongoDB collection not available, skipping save")
+        return
+    
+    if date is None:
+        date = datetime.utcnow()
+    
+    try:
+        document = {
+            "topic": topic,
+            "details": details,
+            "url": url,
+            "core_text": core_text,
+            "date": date,
+            "timestamp": datetime.utcnow(),
+            "created_at": datetime.utcnow().isoformat()
+        }
+        collection.insert_one(document)
+        logger.info(f"Relevance data saved to 'Topic and data' collection: topic='{topic}', URL: {url}")
+    except Exception as e:
+        logger.error(f"MongoDB insertion failed for relevance data: {e}", exc_info=True)
+        # Don't raise exception, just log error to avoid breaking the workflow

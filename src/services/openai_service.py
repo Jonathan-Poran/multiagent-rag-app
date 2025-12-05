@@ -208,6 +208,12 @@ def rate_relevance(user_request: str, core_text: str) -> RelevanceScore:
     if not relevance_client:
         raise ValueError("OpenAI relevance client not available - OPENAI_API_KEY not configured")
     
+    # Truncate core_text to fit within token limits
+    # Model limit: 16,385 tokens. Reserve ~700 tokens for prompt/response = ~15,000 tokens for content
+    # At ~3.5 chars/token: ~52,500 chars. Using 10,000 to be conservative for relevance rating.
+    MAX_RELEVANCE_TEXT_LENGTH = 10000
+    truncated_core_text = truncate_source_content(core_text, max_length=MAX_RELEVANCE_TEXT_LENGTH)
+    
     relevance_rating_prompt = ChatPromptTemplate.from_messages(
         [
             (
@@ -231,7 +237,7 @@ def rate_relevance(user_request: str, core_text: str) -> RelevanceScore:
     chain = relevance_rating_prompt | relevance_client
     result = chain.invoke({
         "user_request": user_request,
-        "core_text": core_text
+        "core_text": truncated_core_text
     })
     
     logger.info(f"Relevance score: {result.relevance_score}")
