@@ -96,15 +96,18 @@ def generate_graph_png_at_startup(output_path: str = None) -> str:
     global _graph_png_path
     
     # Lazy import to avoid circular dependencies
-    from src.graph.graph import graph
-    
-    if graph is None:
-        logger.warning("Graph is not initialized, cannot generate PNG")
-        return None
+    from src.graph.graph import build_graph
     
     try:
-        # Get mermaid diagram text
-        mermaid_diagram = graph.get_graph().draw_mermaid()
+        # Build a graph instance to get its mermaid diagram
+        graph = build_graph()
+        
+        # Get mermaid diagram text - try both patterns for compatibility
+        try:
+            mermaid_diagram = graph.get_graph().draw_mermaid()
+        except AttributeError:
+            # Fallback: try calling draw_mermaid directly on the compiled graph
+            mermaid_diagram = graph.draw_mermaid()
         
         if not mermaid_diagram:
             logger.warning("Mermaid diagram text is empty, cannot generate PNG")
@@ -150,14 +153,18 @@ def generate_graph_png_on_demand(output_path: str = None) -> str:
         str: Path to the generated PNG file, or None if generation failed.
     """
     # Lazy import to avoid circular dependencies
-    from src.graph.graph import graph
-    
-    if graph is None:
-        raise ValueError("Graph is not initialized")
+    from src.graph.graph import build_graph
     
     try:
-        # Get mermaid diagram text
-        mermaid_diagram = graph.get_graph().draw_mermaid()
+        # Build a graph instance to get its mermaid diagram
+        graph = build_graph()
+        
+        # Get mermaid diagram text - try both patterns for compatibility
+        try:
+            mermaid_diagram = graph.get_graph().draw_mermaid()
+        except AttributeError:
+            # Fallback: try calling draw_mermaid directly on the compiled graph
+            mermaid_diagram = graph.draw_mermaid()
         
         if not mermaid_diagram:
             raise ValueError("Mermaid diagram text is empty")
