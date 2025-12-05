@@ -15,7 +15,7 @@ logger = get_logger("PrintGraph")
 _graph_png_path: str | None = None
 
 
-def mermaid_to_png_sync(mermaid_text: str, output_path: str) -> bool:
+def _mermaid_to_png_sync(mermaid_text: str, output_path: str) -> bool:
     """
     Convert Mermaid diagram text to PNG image (synchronous version).
     
@@ -119,7 +119,7 @@ def generate_graph_png_at_startup(output_path: str = None) -> str:
             output_path = os.path.join(temp_dir, "graph_diagram.png")
         
         # Generate PNG
-        if mermaid_to_png_sync(mermaid_diagram, output_path):
+        if _mermaid_to_png_sync(mermaid_diagram, output_path):
             _graph_png_path = output_path
             logger.info(f"Graph PNG generated successfully at startup: {_graph_png_path}")
             return _graph_png_path
@@ -175,7 +175,7 @@ def generate_graph_png_on_demand(output_path: str = None) -> str:
             output_path = os.path.join(temp_dir, "graph_diagram.png")
         
         # Generate PNG
-        if mermaid_to_png_sync(mermaid_diagram, output_path):
+        if _mermaid_to_png_sync(mermaid_diagram, output_path):
             logger.info(f"Graph PNG generated on demand: {output_path}")
             return output_path
         else:

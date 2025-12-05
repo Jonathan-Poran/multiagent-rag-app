@@ -19,9 +19,7 @@ async def welcome_message() -> ChatResponse:
     # Generate new conversation ID
     conversation_id = generate_conversation_id()
     
-    welcome_text = """Welcome, I am a social influencer assistant agent.
-    I can help you create content for your social media platforms.
-    write for me the topic you want to create content."""
+    welcome_text = """Welcome, I am a social influencer assistant agent.\nI can help you create content for your social media platforms.\nwrite for me the topic you want to create content."""
 
     return ChatResponse(
         message=welcome_text,

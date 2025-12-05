@@ -32,7 +32,7 @@ def _get_graph(conversation_id: str) -> Optional[StateGraph]:
 # Route user input
 # -----------------------
 
-def routeInputToGraph(req: UserMessage) -> ChatResponse:
+def route_input_to_graph(req: UserMessage) -> ChatResponse:
     """
     Send user message to graph and handle multi-turn logic.
     Graph decides next step and END detection.

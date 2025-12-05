@@ -84,7 +84,7 @@ def get_viral_urls_from_last_month(topic: str, details: str, limit: int = 2) -> 
         query = f"{topic} {details} viral trending".strip() if details else f"{topic} viral trending"
         
         # Search Tavily - it typically returns recent/viral content
-        results = search_tavily(query, max_results=limit * 3)
+        results = search_tavily(query, max_results=limit)
         
         # Filter and extract URLs, prioritizing by score/engagement if available
         urls = []

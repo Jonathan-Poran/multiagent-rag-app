@@ -1,4 +1,4 @@
-from .graph_factory_service import routeInputToGraph
+from .graph_factory_service import route_input_to_graph
 from .mongo_service import get_collection, save_user_input, generate_conversation_id, save_url_with_topic
 from .openai_service import extract_topic_and_details, generate_video_script, generate_linkedin_content, rate_relevance
 from .print_graph_service import generate_graph_png_at_startup, get_graph_png_path, generate_graph_png_on_demand

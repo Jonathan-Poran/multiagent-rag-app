@@ -70,3 +70,30 @@ def save_user_input(user_text: str) -> None:
     except Exception as e:
         logger.error(f"MongoDB insertion failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"MongoDB insertion failed: {e}")
+
+
+def save_url_with_topic(url: str, topic: str) -> None:
+    """
+    Save URL with topic to MongoDB with timestamp and error handling.
+    
+    Args:
+        url (str): The URL to save.
+        topic (str): The topic to save.
+    """
+    collection = get_collection()
+    try:
+        if collection is not None:
+            document = {
+                "url": url,
+                "topic": topic,
+                "timestamp": datetime.utcnow(),
+                "created_at": datetime.utcnow().isoformat()
+            }
+            collection.insert_one(document)
+            logger.info(f"URL {url} with topic {topic} saved to MongoDB at {document['created_at']}")
+        else:
+            logger.warning("MongoDB collection not available, skipping save")
+            # Don't raise error if collection is not available, just log warning
+    except Exception as e:
+        logger.error(f"MongoDB insertion failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"MongoDB insertion failed: {e}")

@@ -84,7 +84,7 @@ def _get_openai_structured_client() -> Optional[Any]:
         return None
 
 
-def _truncate_source_content(source_content: str, max_length: int = MAX_SOURCE_CONTENT_LENGTH) -> str:
+def truncate_source_content(source_content: str, max_length: int = MAX_SOURCE_CONTENT_LENGTH) -> str:
     """
     Truncate source content to fit within token limits.
     
@@ -254,7 +254,7 @@ def generate_linkedin_content(topic: str, details: str, source_content: str) -> 
         raise ValueError("OpenAI client not available - OPENAI_API_KEY not configured")
     
     # Truncate source content to fit within token limits
-    truncated_content = _truncate_source_content(source_content)
+    truncated_content = truncate_source_content(source_content)
     
     linkedin_generation_prompt = ChatPromptTemplate.from_messages(
         [
@@ -308,7 +308,7 @@ def generate_video_script(topic: str, details: str, source_content: str) -> str:
         raise ValueError("OpenAI client not available - OPENAI_API_KEY not configured")
     
     # Truncate source content to fit within token limits
-    truncated_content = _truncate_source_content(source_content)
+    truncated_content = truncate_source_content(source_content)
     
     instagram_tiktok_generation_prompt = ChatPromptTemplate.from_messages(
         [
