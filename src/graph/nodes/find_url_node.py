@@ -4,24 +4,13 @@ Find URL node - finds 2 viral URLs from the last month from each service (Tavily
 
 from datetime import datetime, timedelta
 from src.graph.state import MessageGraph
-from src.services.youtube_service import get_youtube_client
-from src.services.tavily_service import get_tavily_client, search_tavily
+from src.services.youtube_service import get_viral_urls_from_last_month as get_youtube_viral_urls
+from src.services.tavily_service import get_viral_urls_from_last_month
 from src.services.reddit_service import get_reddit_client, search_reddit_posts
 from src.config.logger import get_logger
 
 
 logger = get_logger("FindURL")
-
-
-def _get_last_month_timestamp() -> str:
-    """
-    Get timestamp for one month ago
-
-    Returns:
-        formatted timestamp string
-    """
-    one_month_ago = datetime.utcnow() - timedelta(days=30)
-    return one_month_ago.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _is_within_last_month(timestamp: float) -> bool:
@@ -51,48 +40,7 @@ def _get_youtube_urls(topic: str, details: str, limit: int = 2) -> list[str]:
     Returns:
         List of YouTube video URLs
     """
-    logger.info(f"Searching YouTube for viral videos: {topic}, {details}")
-    
-    youtube = get_youtube_client()
-    if not youtube:
-        logger.warning("YouTube client not available")
-        return []
-    
-    try:
-        # Combine topic and details for search query
-        query = f"{topic} {details}".strip() if details else topic
-        
-        # Get timestamp for last month
-        published_after = _get_last_month_timestamp()
-        
-        # Search for videos from last month, ordered by view count (viral)
-        search_response = youtube.search().list(
-            q=query,
-            part="snippet",
-            type="video",
-            order="viewCount",  # Order by view count (viral/popular)
-            publishedAfter=published_after,  # Filter by date
-            maxResults=limit * 3,  # Get more to filter for best ones
-            videoDefinition="high",  # Prefer high quality videos
-            videoDuration="medium",  # Medium length videos tend to be more viral
-        ).execute()
-        
-        video_urls = []
-        for item in search_response.get("items", []):
-            video_id = item["id"]["videoId"]
-            video_url = f"https://www.youtube.com/watch?v={video_id}"
-            video_urls.append(video_url)
-            logger.debug(f"Found video: {item['snippet']['title']} - {video_url}")
-            
-            if len(video_urls) >= limit:
-                break
-        
-        logger.info(f"Found {len(video_urls)} YouTube URLs from last month")
-        return video_urls[:limit]
-        
-    except Exception as e:
-        logger.error(f"Error searching YouTube: {e}", exc_info=True)
-        return []
+    return get_youtube_viral_urls(topic, details, limit)
 
 
 def _get_tavily_urls(topic: str, details: str, limit: int = 2) -> list[str]:
@@ -107,66 +55,7 @@ def _get_tavily_urls(topic: str, details: str, limit: int = 2) -> list[str]:
     Returns:
         List of URLs from Tavily search results
     """
-    logger.info(f"Searching Tavily for viral content: {topic}, {details}")
-    
-    client = get_tavily_client()
-    if not client:
-        logger.warning("Tavily client not available")
-        return []
-    
-    try:
-        # Combine topic and details for search query
-        query = f"{topic} {details} viral trending".strip() if details else f"{topic} viral trending"
-        
-        # Search Tavily - it typically returns recent/viral content
-        results = search_tavily(query, max_results=limit * 3)
-        
-        # Filter and extract URLs, prioritizing by score/engagement if available
-        urls = []
-        for result in results:
-            url = result.get("url", "")
-            if url and url not in urls:
-                # Check if result has date info (Tavily results may include published_date)
-                published_date = result.get("published_date")
-                if published_date:
-                    try:
-                        # Parse date and check if within last month
-                        # Handle different date formats
-                        if isinstance(published_date, str):
-                            if "Z" in published_date:
-                                pub_date = datetime.fromisoformat(published_date.replace("Z", "+00:00"))
-                            else:
-                                pub_date = datetime.fromisoformat(published_date)
-                        else:
-                            pub_date = datetime.fromtimestamp(published_date)
-                        
-                        # Check if within last month
-                        # Convert to UTC for comparison
-                        if pub_date.tzinfo:
-                            now = datetime.now(pub_date.tzinfo)
-                            days_diff = (now - pub_date).days
-                        else:
-                            now = datetime.utcnow()
-                            days_diff = (now - pub_date).days
-                        
-                        if days_diff > 30:
-                            continue
-                    except Exception as e:
-                        logger.debug(f"Could not parse date {published_date}: {e}")
-                        pass  # If date parsing fails, include it anyway
-                
-                urls.append(url)
-                logger.debug(f"Found Tavily URL: {url}")
-                
-                if len(urls) >= limit:
-                    break
-        
-        logger.info(f"Found {len(urls)} Tavily URLs")
-        return urls[:limit]
-        
-    except Exception as e:
-        logger.error(f"Error searching Tavily: {e}", exc_info=True)
-        return []
+    return get_viral_urls_from_last_month(topic, details, limit)
 
 
 def _get_reddit_urls(topic: str, details: str, limit: int = 2) -> list[str]:

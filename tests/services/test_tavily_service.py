@@ -22,7 +22,7 @@ sys.modules['src.api.routes'] = MagicMock()
 sys.modules['src.services.graph_service'] = MagicMock()
 
 # Now import the Tavily service
-from src.services.tavily_service import get_tavily_client
+from src.services.tavily_service import _get_tavily_client
 
 
 class TestGetTavilyClient:
@@ -46,7 +46,7 @@ class TestGetTavilyClient:
         settings.tavily_api_key = real_api_key
         
         # Execute - this tests the real path that uses settings from environment
-        client = get_tavily_client()
+        client = _get_tavily_client()
         
         # Assert - client should be created successfully with real API key
         assert client is not None
@@ -73,7 +73,7 @@ class TestGetTavilyClient:
             mock_settings.tavily_api_key = ""
             
             # Execute
-            client = get_tavily_client()
+            client = _get_tavily_client()
             
             # Assert - should return None when no API key
             assert client is None
@@ -93,8 +93,8 @@ class TestGetTavilyClient:
             mock_tavily_client_class.return_value = mock_client_instance
             
             # Execute - call twice
-            client1 = get_tavily_client()
-            client2 = get_tavily_client()
+            client1 = _get_tavily_client()
+            client2 = _get_tavily_client()
             
             # Assert - should be the same instance and TavilyClient should only be called once
             assert client1 is not None

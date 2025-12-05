@@ -3,6 +3,7 @@ YouTube search and transcript fetching service.
 """
 
 from typing import List, Optional, Any
+from datetime import datetime, timedelta
 from src.config.logger import get_logger
 from src.config.settings import settings
 
@@ -86,6 +87,73 @@ def search_youtube_videos(topic: str, details: str, max_results: int = 5) -> Lis
         
         logger.info(f"Successfully found {len(video_urls)} YouTube videos")
         return video_urls
+        
+    except Exception as e:
+        logger.error(f"Error searching YouTube: {e}", exc_info=True)
+        return []
+
+
+def _get_last_month_timestamp() -> str:
+    """
+    Get timestamp for one month ago in ISO format for YouTube API.
+    
+    Returns:
+        Formatted timestamp string (YYYY-MM-DDTHH:MM:SSZ)
+    """
+    one_month_ago = datetime.utcnow() - timedelta(days=30)
+    return one_month_ago.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def get_viral_urls_from_last_month(topic: str, details: str, limit: int = 2) -> List[str]:
+    """
+    Get viral YouTube URLs from the last month.
+    
+    Args:
+        topic: General topic category
+        details: Specific details or sub-topics
+        limit: Number of URLs to return
+    
+    Returns:
+        List of YouTube video URLs from the last month
+    """
+    logger.info(f"Searching YouTube for viral videos: {topic}, {details}")
+    
+    youtube = get_youtube_client()
+    if not youtube:
+        logger.warning("YouTube client not available")
+        return []
+    
+    try:
+        # Combine topic and details for search query
+        query = f"{topic} {details}".strip() if details else topic
+        
+        # Get timestamp for last month
+        published_after = _get_last_month_timestamp()
+        
+        # Search for videos from last month, ordered by view count (viral)
+        search_response = youtube.search().list(
+            q=query,
+            part="snippet",
+            type="video",
+            order="viewCount",  # Order by view count (viral/popular)
+            publishedAfter=published_after,  # Filter by date
+            maxResults=limit * 3,  # Get more to filter for best ones
+            videoDefinition="high",  # Prefer high quality videos
+            videoDuration="medium",  # Medium length videos tend to be more viral
+        ).execute()
+        
+        video_urls = []
+        for item in search_response.get("items", []):
+            video_id = item["id"]["videoId"]
+            video_url = f"https://www.youtube.com/watch?v={video_id}"
+            video_urls.append(video_url)
+            logger.debug(f"Found video: {item['snippet']['title']} - {video_url}")
+            
+            if len(video_urls) >= limit:
+                break
+        
+        logger.info(f"Found {len(video_urls)} YouTube URLs from last month")
+        return video_urls[:limit]
         
     except Exception as e:
         logger.error(f"Error searching YouTube: {e}", exc_info=True)

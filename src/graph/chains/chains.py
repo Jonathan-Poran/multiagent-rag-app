@@ -1,8 +1,7 @@
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from src.services.openai_service import (
-    get_openai_client,
-    get_openai_structured_client,
-    get_openai_relevance_client,
+    _get_openai_client,
+    _get_openai_structured_client,
     ContentStructure,
     RelevanceScore
 )
@@ -120,7 +119,7 @@ def _get_llm():
     """Get OpenAI client (lazy initialization)."""
     global _llm
     if _llm is None:
-        _llm = get_openai_client()
+        _llm = _get_openai_client()
         if _llm is None:
             raise ValueError("OpenAI client not available - OPENAI_API_KEY not configured")
     return _llm
@@ -129,19 +128,11 @@ def _get_llm_structured():
     """Get OpenAI structured client (lazy initialization)."""
     global _llm_structured
     if _llm_structured is None:
-        _llm_structured = get_openai_structured_client()
+        _llm_structured = _get_openai_structured_client()
         if _llm_structured is None:
             raise ValueError("OpenAI structured client not available - OPENAI_API_KEY not configured")
     return _llm_structured
 
-def _get_llm_relevance():
-    """Get OpenAI relevance client (lazy initialization)."""
-    global _llm_relevance
-    if _llm_relevance is None:
-        _llm_relevance = get_openai_relevance_client()
-        if _llm_relevance is None:
-            raise ValueError("OpenAI relevance client not available - OPENAI_API_KEY not configured")
-    return _llm_relevance
 
 # Chains (lazy initialization - will fail if API key not configured)
 # These are kept for backward compatibility but nodes should use openai_service directly

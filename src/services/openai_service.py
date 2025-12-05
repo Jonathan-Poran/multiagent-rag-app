@@ -2,7 +2,7 @@
 OpenAI API service for LLM operations.
 """
 
-from typing import Optional, Any, Dict
+from typing import Optional, Any
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from pydantic import BaseModel, Field
@@ -32,7 +32,7 @@ class RelevanceScore(BaseModel):
     explanation: str = Field(description="Brief explanation of the relevance score")
 
 
-def get_openai_client() -> Optional[ChatOpenAI]:
+def _get_openai_client() -> Optional[ChatOpenAI]:
     """
     Get or create OpenAI client instance.
     Uses singleton pattern to reuse the same client instance.
@@ -58,7 +58,7 @@ def get_openai_client() -> Optional[ChatOpenAI]:
         return None
 
 
-def get_openai_structured_client() -> Optional[Any]:
+def _get_openai_structured_client() -> Optional[Any]:
     """
     Get or create OpenAI client with structured output support.
     
@@ -84,7 +84,7 @@ def get_openai_structured_client() -> Optional[Any]:
         return None
 
 
-def truncate_source_content(source_content: str, max_length: int = MAX_SOURCE_CONTENT_LENGTH) -> str:
+def _truncate_source_content(source_content: str, max_length: int = MAX_SOURCE_CONTENT_LENGTH) -> str:
     """
     Truncate source content to fit within token limits.
     
@@ -112,7 +112,7 @@ def truncate_source_content(source_content: str, max_length: int = MAX_SOURCE_CO
     return truncated + "\n\n[Content truncated due to length limits...]"
 
 
-def get_openai_relevance_client() -> Optional[Any]:
+def _get_openai_relevance_client() -> Optional[Any]:
     """
     Get or create OpenAI client for relevance rating with structured output.
     
@@ -150,7 +150,7 @@ def extract_topic_and_details(messages: list) -> ContentStructure:
     """
     logger.info("Extracting topic and details from user messages")
     
-    structured_client = get_openai_structured_client()
+    structured_client = _get_openai_structured_client()
     if not structured_client:
         raise ValueError("OpenAI structured client not available - OPENAI_API_KEY not configured")
     
@@ -201,7 +201,7 @@ def rate_relevance(user_request: str, core_text: str) -> RelevanceScore:
     """
     logger.info("Rating relevance of core text to user request")
     
-    relevance_client = get_openai_relevance_client()
+    relevance_client = _get_openai_relevance_client()
     if not relevance_client:
         raise ValueError("OpenAI relevance client not available - OPENAI_API_KEY not configured")
     
@@ -249,12 +249,12 @@ def generate_linkedin_content(topic: str, details: str, source_content: str) -> 
     """
     logger.info(f"Generating LinkedIn content for topic: {topic}, details: {details}")
     
-    client = get_openai_client()
+    client = _get_openai_client()
     if not client:
         raise ValueError("OpenAI client not available - OPENAI_API_KEY not configured")
     
     # Truncate source content to fit within token limits
-    truncated_content = truncate_source_content(source_content)
+    truncated_content = _truncate_source_content(source_content)
     
     linkedin_generation_prompt = ChatPromptTemplate.from_messages(
         [
@@ -303,12 +303,12 @@ def generate_video_script(topic: str, details: str, source_content: str) -> str:
     """
     logger.info(f"Generating Instagram/TikTok script for topic: {topic}, details: {details}")
     
-    client = get_openai_client()
+    client = _get_openai_client()
     if not client:
         raise ValueError("OpenAI client not available - OPENAI_API_KEY not configured")
     
     # Truncate source content to fit within token limits
-    truncated_content = truncate_source_content(source_content)
+    truncated_content = _truncate_source_content(source_content)
     
     instagram_tiktok_generation_prompt = ChatPromptTemplate.from_messages(
         [

@@ -3,6 +3,7 @@ Tavily API service for search and content extraction.
 """
 
 from typing import List, Optional
+from datetime import datetime, timedelta
 from tavily import TavilyClient
 from src.config.logger import get_logger
 from src.config.settings import settings
@@ -12,7 +13,7 @@ logger = get_logger("Tavily")
 _tavily_client = None
 
 
-def get_tavily_client() -> Optional[TavilyClient]:
+def _get_tavily_client() -> Optional[TavilyClient]:
     """Get or create Tavily client instance."""
     global _tavily_client
     
@@ -43,7 +44,7 @@ def search_tavily(query: str, max_results: int = 5) -> List[dict]:
     Returns:
         List of search results with content
     """
-    client = get_tavily_client()
+    client = _get_tavily_client()
     if not client:
         logger.warning("Tavily client not available")
         return []
@@ -64,6 +65,75 @@ def search_tavily(query: str, max_results: int = 5) -> List[dict]:
         return []
 
 
+def get_viral_urls_from_last_month(topic: str, details: str, limit: int = 2) -> List[str]:
+    """
+    Get viral Tavily URLs from the last month.
+    
+    Args:
+        topic: General topic category
+        details: Specific details or sub-topics
+        limit: Number of URLs to return
+    
+    Returns:
+        List of URLs from Tavily search results from the last month
+    """
+    logger.info(f"Searching Tavily for viral content: {topic}, {details}")
+    
+    try:
+        # Combine topic and details for search query
+        query = f"{topic} {details} viral trending".strip() if details else f"{topic} viral trending"
+        
+        # Search Tavily - it typically returns recent/viral content
+        results = search_tavily(query, max_results=limit * 3)
+        
+        # Filter and extract URLs, prioritizing by score/engagement if available
+        urls = []
+        for result in results:
+            url = result.get("url", "")
+            if url and url not in urls:
+                # Check if result has date info (Tavily results may include published_date)
+                published_date = result.get("published_date")
+                if published_date:
+                    try:
+                        # Parse date and check if within last month
+                        # Handle different date formats
+                        if isinstance(published_date, str):
+                            if "Z" in published_date:
+                                pub_date = datetime.fromisoformat(published_date.replace("Z", "+00:00"))
+                            else:
+                                pub_date = datetime.fromisoformat(published_date)
+                        else:
+                            pub_date = datetime.fromtimestamp(published_date)
+                        
+                        # Check if within last month
+                        # Convert to UTC for comparison
+                        if pub_date.tzinfo:
+                            now = datetime.now(pub_date.tzinfo)
+                            days_diff = (now - pub_date).days
+                        else:
+                            now = datetime.utcnow()
+                            days_diff = (now - pub_date).days
+                        
+                        if days_diff > 30:
+                            continue
+                    except Exception as e:
+                        logger.debug(f"Could not parse date {published_date}: {e}")
+                        pass  # If date parsing fails, include it anyway
+                
+                urls.append(url)
+                logger.debug(f"Found Tavily URL: {url}")
+                
+                if len(urls) >= limit:
+                    break
+        
+        logger.info(f"Found {len(urls)} Tavily URLs from last month")
+        return urls[:limit]
+        
+    except Exception as e:
+        logger.error(f"Error searching Tavily for viral URLs: {e}", exc_info=True)
+        return []
+
+
 def extract_core_text_from_urls(urls: list[str], topic: str, details: str) -> str:
     """
     Extract core relevant text from a URL using Tavily extract API.
@@ -76,7 +146,7 @@ def extract_core_text_from_urls(urls: list[str], topic: str, details: str) -> st
     Returns:
         Extracted core text relevant to topic/details
     """
-    client = get_tavily_client()
+    client = _get_tavily_client()
     if not client:
         logger.warning("Tavily client not available - cannot extract from URL")
         return ""
@@ -152,7 +222,7 @@ def extract_core_text(transcript: str, topic: str, details: str) -> str:
     Returns:
         Extracted core text relevant to topic/details
     """
-    client = get_tavily_client()
+    client = _get_tavily_client()
     if not client:
         logger.warning("Tavily client not available - returning original transcript")
         return transcript
@@ -193,7 +263,7 @@ def verify_facts(text: str, topic: str, details: str) -> dict:
     Returns:
         Dictionary with verification results (verified: bool, confidence: float, sources: list)
     """
-    client = get_tavily_client()
+    client = _get_tavily_client()
     if not client:
         logger.warning("Tavily client not available - skipping verification")
         return {"verified": False, "confidence": 0.0, "sources": []}
