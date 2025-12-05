@@ -2,7 +2,7 @@
 Topic extraction node - extracts topic and details from user message.
 """
 from langchain_core.messages import AIMessage, HumanMessage
-from src.graph.state import MessageGraph
+from src.dto.graph_dto import MessageGraph
 from src.graph.consts import PREDEFINED_TOPICS
 from src.services.openai_service import extract_topic_and_details
 

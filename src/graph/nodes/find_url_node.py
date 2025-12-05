@@ -3,7 +3,7 @@ Find URL node - finds 2 viral URLs from the last month from each service (Tavily
 """
 
 from datetime import datetime, timedelta
-from src.graph.state import MessageGraph
+from src.dto.graph_dto import MessageGraph
 from src.services.youtube_service import get_viral_urls_from_last_month
 from src.services.tavily_service import get_viral_urls_from_last_month
 from src.services.reddit_service import get_reddit_client, search_reddit_posts

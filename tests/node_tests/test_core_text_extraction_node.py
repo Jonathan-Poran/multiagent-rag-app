@@ -6,7 +6,7 @@ import pytest
 from unittest.mock import patch
 from langchain_core.messages import AIMessage
 from src.graph.nodes.core_text_extraction_node import core_text_extraction_node
-from src.graph.state import MessageGraph
+from src.dto.graph_dto import MessageGraph
 
 
 @pytest.fixture

@@ -2,7 +2,7 @@
 Core text extraction node - extracts relevant text from URLs using Tavily.
 """
 
-from src.graph.state import MessageGraph
+from src.dto.graph_dto import MessageGraph
 from src.services.tavily_service import extract_core_text_from_urls
 from src.config.logger import get_logger
 from langchain_core.messages import AIMessage

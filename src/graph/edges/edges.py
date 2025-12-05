@@ -4,7 +4,7 @@ Contains the should_continue function that determines graph flow.
 """
 
 from langgraph.graph import END
-from src.graph.state import MessageGraph
+from src.dto.graph_dto import MessageGraph
 
 
 def should_continue(state: MessageGraph) -> str:

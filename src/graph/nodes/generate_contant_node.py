@@ -4,7 +4,7 @@ Content generation node - generates both LinkedIn posts and Instagram/TikTok vid
 
 import threading
 from langchain_core.messages import AIMessage
-from src.graph.state import MessageGraph
+from src.dto.graph_dto import MessageGraph
 from src.services.openai_service import generate_linkedin_content, generate_video_script, truncate_source_content
 from src.config.logger import get_logger
 
