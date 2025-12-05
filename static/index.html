@@ -110,6 +110,41 @@
             padding: 10px;
             display: none;
         }
+
+        .topic-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .topic-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .topic-button:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .topic-button:active {
+            transform: translateY(0);
+        }
+
+        .topic-buttons.hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -122,6 +157,12 @@
         </div>
         <div id="chat-area"></div>
         
+        <div class="topic-buttons" id="topic-buttons">
+            <button class="topic-button" onclick="sendTopicMessage('I want to create content about technology and AI')">Technology & AI</button>
+            <button class="topic-button" onclick="sendTopicMessage('I want to create content about health and fitness')">Health & Fitness</button>
+            <button class="topic-button" onclick="sendTopicMessage('I want to create content about business and entrepreneurship')">Business & Entrepreneurship</button>
+        </div>
+        
         <div class="loading" id="loading-msg">Thinking...</div>
         
         <div class="input-group">
@@ -133,6 +174,7 @@
     <script>
         // Store conversation_id
         let conversationId = null;
+        let firstMessageSent = false;
 
         // Load welcome message when page loads
         window.addEventListener('DOMContentLoaded', async () => {
@@ -207,6 +249,20 @@
             }
         }
 
+        function sendTopicMessage(topicText) {
+            // Set the input value and send the message
+            const userInput = document.getElementById('user-input');
+            userInput.value = topicText;
+            sendMessage();
+        }
+
+        function hideTopicButtons() {
+            const topicButtons = document.getElementById('topic-buttons');
+            if (topicButtons) {
+                topicButtons.classList.add('hidden');
+            }
+        }
+
         async function sendMessage() {
             const userInput = document.getElementById('user-input');
             const submitBtn = document.getElementById('submit-btn');
@@ -216,6 +272,12 @@
 
             if (!text) {
                 return;
+            }
+
+            // Hide topic buttons after first message
+            if (!firstMessageSent) {
+                firstMessageSent = true;
+                hideTopicButtons();
             }
 
             // Add user message to chat
@@ -251,7 +313,7 @@
                 const data = await response.json();
                 
                 // Add assistant response to chat
-                const responseText = data.response || JSON.stringify(data);
+                const responseText = data.message || data.response || JSON.stringify(data);
                 addMessage(responseText, 'assistant');
 
             } catch (error) {
