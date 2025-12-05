@@ -13,7 +13,10 @@ from src.graph.consts import PREDEFINED_TOPICS
 logger = get_logger("OpenAI")
 
 # Token limits: roughly 1 token = 4 characters
-MAX_SOURCE_CONTENT_LENGTH = 24000
+# Reduced to account for prompt overhead (system message, user template, topic, details)
+# Model limit: 8192 tokens. Reserve ~2000 tokens for prompt, ~500 for response = ~5500 tokens for content
+# At ~3.5 chars/token average: ~19,250 chars. Using 12,000 to be conservative.
+MAX_SOURCE_CONTENT_LENGTH = 12000
 
 _openai_client: Optional[ChatOpenAI] = None
 _openai_structured_client: Optional[Any] = None
@@ -90,7 +93,7 @@ def truncate_source_content(source_content: str, max_length: int = MAX_SOURCE_CO
     
     Args:
         source_content: The source content to truncate
-        max_length: Maximum character length (default: 24,000 chars ≈ 6,000 tokens)
+        max_length: Maximum character length (default: 12,000 chars ≈ 3,000-3,500 tokens)
     
     Returns:
         Truncated source content
@@ -260,15 +263,19 @@ def generate_linkedin_content(topic: str, details: str, source_content: str) -> 
         [
             (
                 "system",
-                """You are an expert LinkedIn content creator. Create a professional, engaging LinkedIn post based on the provided topic, details, and source content.
-                The post should be:
-                - Professional yet engaging
-                - Well-structured with clear sections
-                - Include relevant insights and value
-                - Optimized for LinkedIn's audience
-                - Between 200-300 words
-                
-                Use the source content to inform your post, but make it original and compelling."""
+                """"You are an expert LinkedIn content creator. Write a short, modern, and eye-catching LinkedIn post based on the provided topic and details source content.
+
+                The post must:
+                - Start with a sharp, curiosity-driven hook
+                - Use short, flowing, youthful sentences
+                - Deliver one clear insight or piece of value
+                - Include 1-3 emojis, used naturally
+                - Be 6-12 lines maximum
+                - End with a light call-to-action question
+                - Feel fresh, human, and innovative
+
+                Create a post that is original, engaging, and optimized for LinkedIn
+                Use the source content to inform your post, but make it original and dont mantion urls or websites."""
             ),
             (
                 "user",
@@ -310,19 +317,21 @@ def generate_video_script(topic: str, details: str, source_content: str) -> str:
     # Truncate source content to fit within token limits
     truncated_content = truncate_source_content(source_content)
     
-    instagram_tiktok_generation_prompt = ChatPromptTemplate.from_messages(
+    video_generation_prompt = ChatPromptTemplate.from_messages(
         [
             (
                 "system",
-                """You are an expert social media script writer for Instagram and TikTok. Create a detailed video script based on the provided topic, details, and source content.
-                The script should be:
-                - Engaging and attention-grabbing from the first second
-                - Structured with clear hooks, main content, and call-to-action
-                - Include specific talking points and visual cues
-                - Optimized for short-form video (30-60 seconds)
+                """You are an expert short-form video scriptwriter. Create a dynamic and attention-grabbing script based on the provided topic and details.
+
+                The script must:
+                - Hook the viewer within the first 2 seconds
+                - Use short, energetic lines optimized for 30-60 sec videos
+                - Include clear talking points and simple visual cues
+                - Be structured as: Hook → Main Message → Value → CTA
                 - Include timestamps and scene descriptions
-                
-                Format the script with clear sections and visual cues."""
+                - Feel modern, fast-paced, and highly engaging
+
+                Format the script with clean sections and clear visual notes."""
             ),
             (
                 "user",
@@ -331,7 +340,7 @@ def generate_video_script(topic: str, details: str, source_content: str) -> str:
         ]
     )
     
-    chain = instagram_tiktok_generation_prompt | client
+    chain = video_generation_prompt | client
     result = chain.invoke({
         "topic": topic,
         "details": details,
