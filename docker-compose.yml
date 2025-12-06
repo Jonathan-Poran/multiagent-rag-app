@@ -1,0 +1,12 @@
+
+services:
+   my-rag-app:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "${PORT:-8080}:${PORT:-8080}"
+    volumes:
+      - ./static:/app/static:ro
+    restart: on-failure
+    command: sh -c "uvicorn src.server:app --host 0.0.0.0 --port ${PORT:-8080} "

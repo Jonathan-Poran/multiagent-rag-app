@@ -68,4 +68,12 @@ dmypy.json
 
 # Logs
 *.log
+logs/
 
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+.ebextensions/*
+!.ebextensions/00-port.config
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

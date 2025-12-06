@@ -1,0 +1,28 @@
+import os
+from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
+
+
+class Settings(BaseSettings):
+    openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
+    tavily_api_key: str = os.getenv("TAVILY_API_KEY", "")
+    youtube_api_key: str = os.getenv("YOUTUBE_API_KEY", "")
+    reddit_client_id: str = os.getenv("REDDIT_CLIENT_ID", "")
+    reddit_client_secret: str = os.getenv("REDDIT_CLIENT_SECRET", "")
+    reddit_user_agent: str = os.getenv("REDDIT_USER_AGENT", "multiagent-rag-app/1.0")
+    mongodb_uri: str = os.getenv("MONGODB_URI", "")
+    mongodb_db_name: str = os.getenv("MONGODB_DB_NAME", "multiagent_rag")
+    mongodb_api_user: str = os.getenv("MONGODB_API_USER", "")
+    mongodb_api_password: str = os.getenv("MONGODB_API_PASSWORD", "")
+    langchain_api_key: str = os.getenv("LANGCHAIN_API_KEY", "")
+    langchain_tracing_v2: str = os.getenv("LANGCHAIN_TRACING_V2", "false")
+    langchain_project: str = os.getenv("LANGCHAIN_PROJECT", "multiagent-rag-app")
+    log_level: str = os.getenv("LOG_LEVEL", "INFO")
+    port: int = int(os.environ.get("PORT", "8080"))
+
+    model_config = ConfigDict(
+        env_file=".env",
+        case_sensitive=False
+    )
+
+settings = Settings()
