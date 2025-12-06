@@ -2,7 +2,7 @@ import os
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 from src.config.logger import get_logger
-from src.services.print_graph_service import get_graph_png_path
+from src.services.print_graph_service import get_graph_png_path, generate_graph_png
 
 router = APIRouter()
 logger = get_logger("GetGraphPNG")
@@ -21,4 +21,10 @@ async def get_graph_image():
         return FileResponse(path, media_type="image/png", filename="graph.png")
     except Exception as e:
         logger.error(f"Error serving graph PNG: {e}", exc_info=True)
-        raise HTTPException(status_code=503, detail="Graph PNG not available")
+        # fallback: try generating
+        try:
+            path = generate_graph_png()
+            return FileResponse(path, media_type="image/png", filename="graph.png")
+        except Exception as e2:
+            logger.error(f"Failed generating graph PNG dynamically: {e2}", exc_info=True)
+            raise HTTPException(status_code=503, detail="Graph PNG not available")
