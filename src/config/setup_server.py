@@ -9,7 +9,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.api import register_routes
 from src.config.logger import logger, set_logger_level
 from src.config.settings import settings
-from src.services.print_graph_service import generate_graph_png_at_startup
 
 def setup_server() -> FastAPI:
     # Initialize logger with settings
@@ -36,13 +35,6 @@ def setup_server() -> FastAPI:
         logger.warning("MONGODB_DB_NAME is not set - graph functionality may not work")
     else:
         logger.info("MONGODB_DB_NAME is configured")
-    
-    # Generate graph PNG at startup
-    try:
-        logger.info("Generating graph PNG at startup")
-        generate_graph_png_at_startup()
-    except Exception as e:
-        logger.warning(f"Could not generate graph PNG at startup: {e}. It will be generated on-demand.")
 
     app = FastAPI(title="Multi-Agent RAG App", version="1.0.0")
 
