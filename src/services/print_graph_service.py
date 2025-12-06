@@ -2,7 +2,6 @@ import os
 import subprocess
 import tempfile
 from src.config.logger import get_logger
-from src.graph.graph import build_graph
 
 logger = get_logger("PrintGraphService")
 
@@ -23,6 +22,7 @@ def ensure_mermaid_cli() -> str:
 
 
 def generate_graph_png() -> str:
+    from src.graph.graph import build_graph
     graph = build_graph()
     try:
         mermaid_text = graph.get_graph().draw_mermaid()
