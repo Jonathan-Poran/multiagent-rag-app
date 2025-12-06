@@ -34,6 +34,7 @@ Using a virtual environment is highly recommended to isolate project dependencie
    deactivate
    ```
 
+
 #### Windows
 
 1. **Create a virtual environment**:
