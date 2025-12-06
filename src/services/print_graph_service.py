@@ -15,6 +15,26 @@ logger = get_logger("PrintGraph")
 _graph_png_path: str | None = None
 
 
+def _get_writable_temp_dir() -> str:
+    """
+    Get a writable temporary directory, trying multiple locations.
+    In AWS EB/Docker, /tmp is usually available and writable.
+    
+    Returns:
+        str: Path to a writable temporary directory
+    """
+    # Try /tmp first (standard in containers), then system temp, then current dir
+    possible_dirs = ["/tmp", tempfile.gettempdir(), os.getcwd()]
+    for temp_dir in possible_dirs:
+        if os.path.exists(temp_dir) and os.access(temp_dir, os.W_OK):
+            logger.debug(f"Using writable temp directory: {temp_dir}")
+            return temp_dir
+    
+    # Last resort: use current directory
+    logger.warning(f"Using current directory as temp directory: {os.getcwd()}")
+    return os.getcwd()
+
+
 def _mermaid_to_png_sync(mermaid_text: str, output_path: str) -> bool:
     """
     Convert Mermaid diagram text to PNG image (synchronous version).
@@ -26,11 +46,45 @@ def _mermaid_to_png_sync(mermaid_text: str, output_path: str) -> bool:
     Returns:
         bool: True if successful, False otherwise.
     """
-    # Check if mmdc is available
-    try:
-        subprocess.run(["mmdc", "--version"], capture_output=True, check=True, timeout=5)
-    except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired) as e:
-        logger.error(f"mermaid-cli (mmdc) is not installed or not in PATH: {e}")
+    # Try to find mmdc in common locations or PATH
+    mmdc_paths = [
+        "mmdc",  # Try PATH first
+        "/usr/local/bin/mmdc",  # Global npm install location
+        "/usr/bin/mmdc",  # System location
+    ]
+    
+    mmdc_cmd = None
+    for path in mmdc_paths:
+        try:
+            result = subprocess.run(
+                [path, "--version"],
+                capture_output=True,
+                check=True,
+                timeout=5
+            )
+            mmdc_cmd = path
+            logger.info(f"Found mermaid-cli at: {path}, version: {result.stdout.decode().strip()}")
+            break
+        except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
+            continue
+    
+    if mmdc_cmd is None:
+        # Try to find it using which/whereis
+        try:
+            which_result = subprocess.run(
+                ["which", "mmdc"],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            if which_result.returncode == 0:
+                mmdc_cmd = which_result.stdout.strip()
+                logger.info(f"Found mermaid-cli via which: {mmdc_cmd}")
+        except Exception:
+            pass
+    
+    if mmdc_cmd is None:
+        logger.error("mermaid-cli (mmdc) is not installed or not in PATH. Tried: " + ", ".join(mmdc_paths))
         return False
     
     if not mermaid_text or not mermaid_text.strip():
@@ -45,13 +99,29 @@ def _mermaid_to_png_sync(mermaid_text: str, output_path: str) -> bool:
     try:
         logger.info(f"Generating PNG from Mermaid diagram \n input: {input_path} \n output: {output_path}")
         
+        # Ensure output directory exists and is writable
+        output_dir = os.path.dirname(output_path) or os.getcwd()
+        if not os.path.exists(output_dir):
+            try:
+                os.makedirs(output_dir, exist_ok=True, mode=0o755)
+                logger.info(f"Created output directory: {output_dir}")
+            except Exception as e:
+                logger.error(f"Failed to create output directory {output_dir}: {e}")
+                return False
+        
+        # Check if directory is writable
+        if not os.access(output_dir, os.W_OK):
+            logger.error(f"Output directory is not writable: {output_dir}")
+            return False
+        
         # Run mermaid-cli with timeout
         result = subprocess.run(
-            ["mmdc", "-i", input_path, "-o", output_path],
+            [mmdc_cmd, "-i", input_path, "-o", output_path],
             check=True,
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=30,
+            env=os.environ.copy()  # Preserve environment variables
         )
         
         if not os.path.exists(output_path):
@@ -115,7 +185,7 @@ def generate_graph_png_at_startup(output_path: str = None) -> str:
         
         # Use provided path or default to temp directory
         if output_path is None:
-            temp_dir = tempfile.gettempdir()
+            temp_dir = _get_writable_temp_dir()
             output_path = os.path.join(temp_dir, "graph_diagram.png")
         
         # Generate PNG
@@ -171,7 +241,7 @@ def generate_graph_png_on_demand(output_path: str = None) -> str:
         
         # Use provided path or default to temp directory
         if output_path is None:
-            temp_dir = tempfile.gettempdir()
+            temp_dir = _get_writable_temp_dir()
             output_path = os.path.join(temp_dir, "graph_diagram.png")
         
         # Generate PNG

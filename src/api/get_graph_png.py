@@ -37,6 +37,21 @@ async def get_graph_png():
                 detail=f"Failed to generate graph PNG. Please check server logs. Error: {str(e)}"
             )
     
+    # Verify file exists and is readable before returning
+    if not os.path.exists(graph_png_path):
+        logger.error(f"PNG file does not exist at path: {graph_png_path}")
+        raise HTTPException(
+            status_code=404,
+            detail="Graph PNG file not found"
+        )
+    
+    if not os.access(graph_png_path, os.R_OK):
+        logger.error(f"PNG file is not readable: {graph_png_path}")
+        raise HTTPException(
+            status_code=403,
+            detail="Graph PNG file is not accessible"
+        )
+    
     # Return the PNG file
     return FileResponse(
         graph_png_path,
