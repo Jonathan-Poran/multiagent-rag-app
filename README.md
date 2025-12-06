@@ -270,9 +270,70 @@ eb setenv OPENAI_API_KEY=your_key \
 
 - **502 Bad Gateway**: Check that the health endpoint `/health` is accessible
 - **Port Issues**: Ensure PORT environment variable is set (EB sets this automatically)
-- **Graph Not Working**: Verify OPENAI_API_KEY is set in environment variables
 - **View Logs**: Use `eb logs` to see application logs and errors
 
+
+### CI/CD to AWS Elastic Beanstalk through GitHub Actions
+
+1. After you finish deploying to AWS Elastic Beanstalk
+2. Go to GitHub Actions -> New workflow 
+3. Paste this:
+```bash
+name: Deploy to Elastic Beanstalk (Docker)
+   on:
+      push:
+         branches: - main #or another barnch 
+   
+   jobs:
+      deploy: 
+         runs-on: ubuntu-latest 
+
+         steps: 
+         - name: Checkout code 
+         uses: actions/checkout@v4
+
+         - name: Generate deployment package (zip)
+         run: zip -r deploy.zip . -x "*.git*" 
+         
+         - name: Configure AWS credentials 
+         uses: aws-actions/configure-aws-credentials@v4
+         with: 
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }} 
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} 
+            aws-region: us-east-1 # change if needed 
+            
+            - name: Upload ZIP to S3
+            run: | 
+               FILE_KEY="multiagent-rag-$(date +%s).zip" 
+               echo "FILE_KEY=$FILE_KEY" >> $GITHUB_ENV 
+               aws s3 cp deploy.zip s3://${{ secrets.EB_S3_BUCKET }}/$FILE_KEY 
+            
+            - name: Create new EB Application Version 
+            run: | 
+               VERSION="v-$(date +%s)" 
+               echo "VERSION=$VERSION" >> $GITHUB_ENV 
+               
+               aws elasticbeanstalk create-application-version \ 
+                  --application-name "${{ secrets.EB_APP_NAME }}" \ 
+                  --version-label "$VERSION" \ 
+                  --source-bundle S3Bucket=${{ secrets.EB_S3_BUCKET }},S3Key=$FILE_KEY
+                  
+            - name: Deploy to EB environment 
+            run: | 
+               aws elasticbeanstalk update-environment \ 
+               --environment-name "${{ secrets.EB_ENV_NAME }}" \ 
+               --version-label "$VERSION"
+```
+3. Commit & push to GitHub
+4. Add GitHub Secrets:
+   - AWS_ACCESS_KEY_ID
+   - AWS_SECRET_ACCESS_KEY
+   - EB_APP_NAME
+   - EB_ENV_NAME
+   - EB_S3_BUCKET
+
+
+   
 ## Testing
 
 The project uses `pytest` for testing. Tests are organized in the `tests/` directory with separate subdirectories for different test types.
