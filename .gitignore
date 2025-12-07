@@ -71,7 +71,7 @@ dmypy.json
 logs/
 
 # Graph PNG
-static/graph.png
+static/graph_diagram.png
 
 
 # Elastic Beanstalk Files
