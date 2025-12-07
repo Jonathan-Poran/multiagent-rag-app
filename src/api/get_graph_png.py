@@ -16,6 +16,7 @@ async def get_graph_png():
     Returns:
         FileResponse: PNG image of the graph diagram.
     """
+    logger.info("Get graph PNG endpoint accessed")
     try:
         path = await get_graph_png_path()
         return FileResponse(path, media_type="image/png", filename="graph.png")

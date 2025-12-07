@@ -55,4 +55,5 @@ async def get_graph_png_path() -> str:
     if not os.path.exists(GRAPH_PNG_PATH):
         logger.info("Graph PNG missing, generating now...")
         await generate_graph_png()
+    logger.info(f"Graph PNG path: {GRAPH_PNG_PATH}")
     return GRAPH_PNG_PATH
