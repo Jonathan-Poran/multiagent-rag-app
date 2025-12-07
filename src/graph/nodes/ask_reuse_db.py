@@ -1,3 +1,4 @@
+from datetime import datetime
 from src.dto.graph_dto import MessageGraph
 from langchain_core.messages import AIMessage, HumanMessage
 from src.config.logger import get_logger
@@ -38,7 +39,28 @@ def ask_date_node(state: MessageGraph) -> dict:
     # No response yet, ask the question
     topic = state.get("topic", "")
     date = state.get("date", "")
-    logger.info(f"ASK_DATE_RELEVANT node executing: topic={topic}, date={date}, db_content length={len(db_content)}")
-    msg = AIMessage(content=f"I have existing data for '{topic}' from {date}. Is this date okay for you? (yes/no)")
+    
+    # Format date to DD/MM/YYYY format
+    formatted_date = ""
+    if date:
+        try:
+            # Handle datetime object
+            if isinstance(date, datetime):
+                formatted_date = date.strftime("%d/%m/%Y")
+            # Handle string date (if it's already a string)
+            elif isinstance(date, str):
+                # Try to parse and reformat if it's a datetime string
+                try:
+                    parsed_date = datetime.fromisoformat(date.replace('Z', '+00:00'))
+                    formatted_date = parsed_date.strftime("%d/%m/%Y")
+                except (ValueError, AttributeError):
+                    # If parsing fails, use as-is or try other formats
+                    formatted_date = date
+        except Exception as e:
+            logger.warning(f"Failed to format date: {e}, using original value")
+            formatted_date = str(date) if date else ""
+    
+    logger.info(f"ASK_DATE_RELEVANT node executing: topic={topic}, date={date}, formatted_date={formatted_date}, db_content length={len(db_content)}")
+    msg = AIMessage(content=f"I have existing data for '{topic}' from {formatted_date}. Is this date okay for you? (yes/no)")
     logger.info("Returning message to ask user about date")
     return {"messages": [msg]}  # This will pause for user input via graph routing
