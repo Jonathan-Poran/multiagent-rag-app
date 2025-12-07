@@ -157,7 +157,7 @@ PORT=8080 uvicorn src.server:app --host 0.0.0.0 --port $PORT --reload
 To run the application using Docker Compose:
 
 ```bash
-docker compose --env-file .env up
+docker compose --env-file .env up --build -d
 ```
 
 
