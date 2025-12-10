@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Install mermaid-cli
-RUN npm install -g @mermaid-js/mermaid-cli puppeteer
+#RUN npm install -g @mermaid-js/mermaid-cli puppeteer
 
 # REQUIRED for mmdc to generate PNG (Chromium deps)
 RUN apt-get update && apt-get install -y \
