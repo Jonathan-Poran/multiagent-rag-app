@@ -1,19 +1,23 @@
-FROM python:3.11-bullseye
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Node.js
+# Install Node.js & npm
 RUN apt-get update && apt-get install -y curl \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# Mermaid CLI
-RUN npm install -g @mermaid-js/mermaid-cli
+# Install mermaid-cli
+#RUN npm install -g @mermaid-js/mermaid-cli 
 
-# Chromium (required by mermaid-cli)
-RUN apt-get update && apt-get install -y chromium fonts-liberation \
-    && rm -rf /var/lib/apt/lists/*
+# REQUIRED for mmdc to generate PNG (Chromium deps)
+RUN apt-get update && apt-get install -y \
+    chromium-driver chromium fonts-liberation libasound2 libatk-bridge2.0-0 libatk1.0-0 \
+    libcups2 libdrm2 libgbm1 libgtk-3-0 libnspr4 libnss3 libxcomposite1 \
+    libxdamage1 libxfixes3 libxrandr2 libxshmfence1 xdg-utils libxss1 \
+    --no-install-recommends && rm -rf /var/lib/apt/lists/*
+
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
